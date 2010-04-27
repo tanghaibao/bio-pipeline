@@ -14,7 +14,6 @@ This does the following:
     4. Use this alignment info to align gene sequences using PAL2NAL 
     5. Run PAML yn00 to calculate synonymous mutation rates.
 """
-CLEAN_UP = 0
 
 ########### MODIFY THE FOLLOWING PATHS ###########
 CLUSTALW_BIN = "~/bin/clustalw2"
@@ -69,8 +68,8 @@ class MrTransCommandline(AbstractCommandline):
 def main(protein_file, dna_file, output_file):
     output_h = open(output_file, "w")
     output_h.write("name,dS-yn,dN-yn,dS-ng,dN-ng\n")
-    work_dir = os.path.join(os.getcwd(), "syn_analysis")
-    if not(os.path.exists(work_dir)):
+    work_dir = op.join(os.getcwd(), "syn_analysis")
+    if not op.exists(work_dir):
         os.makedirs(work_dir)
     prot_iterator = SeqIO.parse(open(protein_file), "fasta")
     dna_iterator = SeqIO.parse(open(dna_file), "fasta")
@@ -85,16 +84,17 @@ def main(protein_file, dna_file, output_file):
                     find_synonymous(mrtrans_fasta, work_dir)
             if ds_subs_yn is not None:
                 pair_name = "%s;%s" % (p_rec_1.name, p_rec_2.name)
-                output_h.write("%s,%s,%s,%s,%s\n" % (pair_name, 
-                        ds_subs_yn, dn_subs_yn, ds_subs_ng, dn_subs_ng))
+                output_h.write("%s\n" % (",".join(str(x) for x in (pair_name, 
+                        ds_subs_yn, dn_subs_yn, ds_subs_ng, dn_subs_ng))))
                 output_h.flush()
+
 
 def find_synonymous(input_file, work_dir):
     """Run yn00 to find the synonymous subsitution rate for the alignment.
     """
     # create the .ctl file
-    ctl_file = os.path.join(work_dir, "yn-input.ctl")
-    output_file = os.path.join(work_dir, "nuc-subs.yn")
+    ctl_file = op.join(work_dir, "yn-input.ctl")
+    output_file = op.join(work_dir, "nuc-subs.yn")
     ctl_h = open(ctl_file, "w")
     ctl_h.write("seqfile = %s\noutfile = %s\nverbose = 0\n" % 
                 (input_file, output_file))
@@ -123,7 +123,7 @@ def find_synonymous(input_file, work_dir):
     
     # Yang
     output_h = open(output_file)
-    for line in output_h.xreadlines():
+    for line in output_h:
         if line.find("+-") >= 0 and line.find("dS") == -1:
             parts = line.split(" +-")
             ds_value_yn = extract_subs_value(parts[1])
@@ -160,60 +160,43 @@ def extract_subs_value(text):
 def run_mrtrans(align_fasta, rec_1, rec_2, work_dir):
     """Align two nucleotide sequences with mrtrans and the protein alignment.
     """
-    try:
-        align_file = os.path.join(work_dir, "prot-align.fasta")
-        nuc_file = os.path.join(work_dir, "nuc.fasta")
-        output_file = os.path.join(work_dir, "nuc-align.mrtrans")
+    align_file = op.join(work_dir, "prot-align.fasta")
+    nuc_file = op.join(work_dir, "nuc.fasta")
+    output_file = op.join(work_dir, "nuc-align.mrtrans")
+    
+    # make the protein alignment file
+    align_h = open(align_file, "w")
+    align_h.write(str(align_fasta))
+    align_h.close()
+    # make the nucleotide file
+    SeqIO.write((rec_1, rec_2), nuc_file, "fasta")
         
-        # make the protein alignment file
-        align_h = open(align_file, "w")
-        align_h.write(str(align_fasta))
-        align_h.close()
-        # make the nucleotide file
-        nuc_h = open(nuc_file, "w")
-        SeqIO.write((rec_1, rec_2), nuc_file, "fasta")
-        nuc_h.close()
-            
-        # run the program
-        cl = MrTransCommandline(align_file, nuc_file, output_file)
-        r, e = cl.run()
-        if e is None:
-            print >>sys.stderr, "\tpal2nal:", cl
-            return output_file
-        elif e.read().find("could not translate") >= 0:
-            print >>sys.stderr, "***pal2nal could not translate"
-            return None
-    finally:
-        if CLEAN_UP:
-            if os.path.exists(nuc_file):
-                os.remove(nuc_file)
-            if os.path.exists(align_file):
-                os.remove(align_file)
+    # run the program
+    cl = MrTransCommandline(align_file, nuc_file, output_file)
+    r, e = cl.run()
+    if e is None:
+        print >>sys.stderr, "\tpal2nal:", cl
+        return output_file
+    elif e.read().find("could not translate") >= 0:
+        print >>sys.stderr, "***pal2nal could not translate"
+        return None
 
 
 def clustal_align_protein(rec_1, rec_2, work_dir):
     """Align the two given proteins with clustalw.
     """
-    try:
-        fasta_file = os.path.join(work_dir, "prot-start.fasta")
-        align_file = os.path.join(work_dir, "prot.aln")
-        fasta_h = open(fasta_file, "w")
-        SeqIO.write((rec_1, rec_2), fasta_h, "fasta")
-        fasta_h.close()
-        clustal_cl = Clustalw.MultipleAlignCL(fasta_file, command=CLUSTALW_BIN)
-        clustal_cl.set_output(align_file, output_order = 'INPUT')
-        clustal_cl.set_type('PROTEIN')
-        Clustalw.do_alignment(clustal_cl)
-        aln_file = file(clustal_cl.output_file)
-        alignment = AlignIO.read(aln_file, "clustal")
-        print >>sys.stderr, "\tDoing clustalw alignment: %s" % clustal_cl
-        return alignment.format("fasta") 
-    finally:
-        if CLEAN_UP:
-            if os.path.exists(align_file):
-                os.remove(align_file)
-            if os.path.exists(fasta_file):
-                os.remove(fasta_file)
+    fasta_file = op.join(work_dir, "prot-start.fasta")
+    align_file = op.join(work_dir, "prot.aln")
+    SeqIO.write((rec_1, rec_2), fasta_file, "fasta")
+
+    clustal_cl = Clustalw.MultipleAlignCL(fasta_file, command=CLUSTALW_BIN)
+    clustal_cl.set_output(align_file, output_order = 'INPUT')
+    clustal_cl.set_type('PROTEIN')
+    Clustalw.do_alignment(clustal_cl)
+    aln_file = file(clustal_cl.output_file)
+    alignment = AlignIO.read(aln_file, "clustal")
+    print >>sys.stderr, "\tDoing clustalw alignment: %s" % clustal_cl
+    return alignment.format("fasta") 
 
 
 if __name__ == "__main__":
