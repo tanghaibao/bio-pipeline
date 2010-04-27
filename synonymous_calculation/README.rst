@@ -6,7 +6,7 @@ Installation
 The python script will run on Linux operation system. To install, you must have the following softwares in place, please contact system admin if you do not know how to install,
 
 * `biopython <http://www.biopython.org>`_
-* `CLUSTALW <http://www.ebi.ac.uk/Tools/clustalw2/index.html>_`
+* `CLUSTALW <http://www.ebi.ac.uk/Tools/clustalw2/index.html>`_
 * `PAL2NAL <http://coot.embl.de/pal2nal/>`_
 * `PAML <http://abacus.gene.ucl.ac.uk/software/paml.html>`_
 
