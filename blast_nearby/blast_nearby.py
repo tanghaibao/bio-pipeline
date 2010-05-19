@@ -110,10 +110,12 @@ def main(qfasta, sfasta, options):
 
     anchors = Anchor(options.anchors, qbed, sbed)
     # TODO: use shlex to parse options.params. then dict.update
-    pool = Pool(cpu_count())
+    cpus = cpu_count()
+    pool = Pool(cpus)
+
     for i, command_group in enumerate(anchors.gen_cmds(qfasta, sfasta, options.dist, options.parameters)):
-        if not (i - 1) % 1000:
-            print >>sys.stderr, "complete: %.5f" % (((i - 1) / 8) / len(anchors))
+        if not (i - 1) % 100:
+            print >>sys.stderr, "complete: %.5f" % (((i - 1) * cpus) / len(anchors))
         for lines in pool.map(run_blast, command_group):
             print "\n".join(lines)
 
