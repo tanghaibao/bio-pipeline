@@ -66,7 +66,8 @@ class Anchor(list):
             stmp.close()
             cmd = "bl2seq -p blastn -W 15 -D 1 -i %s -j %s; rm -f %s %s"
             cmd %= (qtmp.name, stmp.name, qtmp.name, stmp.name)
-            yield cmd, qstart, sstart
+            # these must match the args accepted by run_blast.
+            yield cmd, qstart, sstart, q, s, dist
 
     def gen_cmds(self, qfasta, sfasta, dist, params):
         n = cpu_count()
@@ -84,9 +85,32 @@ def sh(cmd):
     if err: print >>sys.stderr, err
     return out
 
+def check_locs(locs, bed_line, dist):
+    """
+    filter out hits that were in the PAD area
+    """
+    return calc_dist(locs[0], locs[1], bed_line) <= dist
+
+def calc_dist(a, b, bed_line):
+    return min(
+        abs(a - bed_line.start),
+        abs(b - bed_line.start),
+        abs(a - bed_line.end),
+        abs(b - bed_line.end))
+
+def check_dist(hit, q, s, dist):
+    """
+    pythagorean yo
+    """
+    q0, q1 = hit[:2]
+    s0, s1 = hit[2:]
+    qdist = calc_dist(q0, q1, q)
+    sdist = calc_dist(s0, s1, s)
+    return ((sdist ** 2 + qdist ** 2) ** 0.5) <= dist
+
 def run_blast(args):
     #print >>sys.stderr, args
-    cmd, qstart, sstart = args
+    cmd, qstart, sstart, q, s, dist = args
     data = []
     for line in sh(cmd).strip().split("\n"):
         #print >>sys.stderr, line
@@ -95,9 +119,13 @@ def run_blast(args):
         # update start, stop positions based on slice.
         line[6:10] = map(int, line[6:10])
         line[6:8] = [l + qstart - 1 for l in line[6:8]]
+        if not check_locs(line[6:8], q, dist): continue
+
         line[8:10] = [l + sstart - 1 for l in line[8:10]]
-        line[6:10] = map(str, line[6:10])
-        data.append("\t".join(line))
+        if not check_locs(line[8:10], s, dist): continue
+
+        if not check_dist(line[6:10], q, s, dist): continue
+        data.append(line)
     return data
 
 
@@ -115,9 +143,12 @@ def main(qfasta, sfasta, options):
 
     for i, command_group in enumerate(anchors.gen_cmds(qfasta, sfasta, options.dist, options.parameters)):
         if not (i - 1) % 100:
-            print >>sys.stderr, "complete: %.5f" % (((i - 1) * cpus) / len(anchors))
+            print >>sys.stderr, "complete: %.5f" % (((i - 1.0) * cpus) / len(anchors))
         for lines in pool.map(run_blast, command_group):
-            print "\n".join(lines)
+            # TODO: handle blast hits that overlap the distance cutoff and are so repeated...
+            for line in lines:
+                line[6:10] = map(str, line[6:10])
+                print "\t".join(line)
 
 if __name__ == '__main__':
 
