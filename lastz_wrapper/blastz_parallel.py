@@ -2,7 +2,9 @@
 # -*- coding: UTF-8 -*-
 
 """
-Make LASTZ follow the BLAST convention
+%prog -i query.fa -d database.fa [options]
+
+run LASTZ similar to the BLAST interface, and generates -m8 tabular format
 """
 
 import os
@@ -10,10 +12,10 @@ import sys
 import shutil
 import tempfile
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 
 from subprocess import Popen, PIPE
-from multiprocessing import Process, Lock, cpu_count
+from multiprocessing import Process, cpu_count
 from Bio import SeqIO
 
 
@@ -50,11 +52,8 @@ def lastz(afasta_fn, bfasta_fn, out_fh):
     logging.debug("job <%d> finished" % proc.pid)
 
 
-def lastz_process(lock, afasta_fn, bfasta_fn, out_fh):
-    # acquire a lock to prevent multiple processes write to the same file
-    lock.acquire()
+def lastz_process(afasta_fn, bfasta_fn, out_fh):
     lastz(afasta_fn, bfasta_fn, out_fh)
-    lock.release()
 
 
 def chunks(L, n):
@@ -68,7 +67,6 @@ def newnames(oldname, n):
 
 
 def main(cpus, afasta_fn, bfasta_fn, out_fh):
-    lock = Lock()
     cpus = min(cpus, cpu_count())
     logging.debug("Dispatch job to %d cpus" % cpus)
 
@@ -87,7 +85,7 @@ def main(cpus, afasta_fn, bfasta_fn, out_fh):
     processes = []
     for name in names:
         pi = Process(target=lastz_process, 
-                     args=(lock, name, bfasta_fn, out_fh))
+                     args=(name, bfasta_fn, out_fh))
         pi.start()
         processes.append(pi)
 
@@ -100,8 +98,6 @@ def main(cpus, afasta_fn, bfasta_fn, out_fh):
 if __name__ == '__main__':
     
     from optparse import OptionParser
-
-    usage = "%prog -i query.fa -d database.fa"
 
     parser = OptionParser(usage)
     parser.add_option("-i", dest="query", 
