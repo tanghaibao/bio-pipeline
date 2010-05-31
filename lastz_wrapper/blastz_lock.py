@@ -39,10 +39,10 @@ def lastz_to_blast(row):
 
 
 def lastz(afasta_fn, bfasta_fn, out_fh):
-    lastz_cmd = "lastz --format=general-:%s --transition=2 --ambiguous=iupac %s[multiple] %s"
-    lastz_cmd = lastz_cmd % (lastz_fields, bfasta_fn, afasta_fn) 
-
+    lastz_cmd = "lastz --format=general-:%s --ambiguous=iupac %s[multiple] %s"
+    lastz_cmd %= (lastz_fields, bfasta_fn, afasta_fn) 
     logging.debug(lastz_cmd)
+
     proc = Popen(lastz_cmd, stdout=PIPE, stderr=PIPE, shell=True)
 
     logging.debug("job <%d> started" % proc.pid)
@@ -72,14 +72,11 @@ def main(cpus, afasta_fn, bfasta_fn, out_fh):
 
     # split input fasta into chunks
     f = Fasta(afasta_fn)
-    names = newnames(afasta_fn, cpus)
     temp_dir = tempfile.mkdtemp()
+    names = newnames(os.path.join(temp_dir, afasta_fn), cpus)
     logging.debug("Temporary directory %s created for %s" % \
             (temp_dir, afasta_fn))
             
-    cwd = os.getcwd()
-    os.chdir(temp_dir)
-
     chunk_size = len(f) / cpus + 1
     for name, chunk in itertools.izip_longest(names, chunks(f, chunk_size)):
         if chunk is None: break 
@@ -93,7 +90,6 @@ def main(cpus, afasta_fn, bfasta_fn, out_fh):
                      args=(lock, names[i], bfasta_fn, out_fh))
         pi.start()
 
-    os.chdir(cwd)
     shutil.rmtree(temp_dir)
 
 
