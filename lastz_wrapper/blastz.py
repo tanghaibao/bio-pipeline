@@ -9,6 +9,7 @@ run LASTZ similar to the BLAST interface, and generates -m8 tabular format
 
 import os
 import sys
+import math
 import shutil
 import tempfile
 import logging
@@ -25,6 +26,17 @@ blast_fields = "query,subject,pctid,hitlen,nmismatch,ngaps,"\
 lastz_fields = "name2,name1,identity,nmismatch,ngap,"\
         "start2,end2,start1,end1,score"
 
+# conversion between blastz and ncbi is taken from Kent src
+# src/lib/blastOut.c
+# this is not rigorous definition of e-value (assumes human genome) !!
+blastz_score_to_ncbi_bits = lambda bz_score: bz_score * 0.0205
+
+def blastz_score_to_ncbi_expectation(bz_score):
+    bits = blastz_score_to_ncbi_bits(bz_score) 
+    log_prob = -bits * 0.301029996
+    # this number looks like.. human genome?
+    return 3.0e9 * math.exp(log_prob)
+
 
 def lastz_to_blast(row):
     # conver the lastz tabular to the blast tabular, see headers above
@@ -33,8 +45,11 @@ def lastz_to_blast(row):
             start1, end1, start2, end2, score = atoms
     identity = identity.replace("%", "")
     hitlen = coverage.split("/")[1]
+    score = float(score)
     # TODO: evalue formula lookup
-    evalue = str(1e-50)
+    evalue = blastz_score_to_ncbi_expectation(score)
+    score = blastz_score_to_ncbi_bits(score) 
+    evalue, score = "%.2g" % evalue, "%.1f" % score
     return "\t".join((name1, name2, identity, hitlen, nmismatch, ngap, \
             start1, end1, start2, end2, evalue, score))
 
@@ -95,7 +110,8 @@ def main(cpus, afasta_fn, bfasta_fn, out_fh):
     for pi in processes:
         pi.join()
 
-    shutil.rmtree(temp_dir)
+    if cpus > 1:
+        shutil.rmtree(temp_dir)
 
 
 if __name__ == '__main__':
@@ -110,7 +126,7 @@ if __name__ == '__main__':
     parser.add_option("-o", dest="outfile", 
             help="BLAST output [default: stdout]")
     parser.add_option("-A", dest="cpus", default=1, type="int", 
-            help="serialize job to multiple cpus [default: 1]")
+            help="parallelize job to multiple cpus [default: %default]")
 
     (options, args) = parser.parse_args()
 
