@@ -8,15 +8,14 @@ Make LASTZ follow the BLAST convention
 import os
 import sys
 import shutil
-import itertools
 import tempfile
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
 from subprocess import Popen, PIPE
 from multiprocessing import Process, Lock, cpu_count
-from pyfasta import Fasta
-from pyfasta.split_fasta import newnames
+from Bio import SeqIO
+
 
 blast_fields = "query,subject,pctid,hitlen,nmismatch,ngaps,"\
         "qstart,qstop,sstart,sstop,evalue,score"
@@ -43,7 +42,7 @@ def lastz(afasta_fn, bfasta_fn, out_fh):
     lastz_cmd %= (lastz_fields, bfasta_fn, afasta_fn) 
     logging.debug(lastz_cmd)
 
-    proc = Popen(lastz_cmd, stdout=PIPE, stderr=PIPE, shell=True)
+    proc = Popen(lastz_cmd, bufsize=1, stdout=PIPE, stderr=PIPE, shell=True)
 
     logging.debug("job <%d> started" % proc.pid)
     for row in proc.stdout:
@@ -51,18 +50,21 @@ def lastz(afasta_fn, bfasta_fn, out_fh):
     logging.debug("job <%d> finished" % proc.pid)
 
 
-def lastz_thread(lock, afasta_fn, bfasta_fn, out_fh):
+def lastz_process(lock, afasta_fn, bfasta_fn, out_fh):
     # acquire a lock to prevent multiple processes write to the same file
     lock.acquire()
     lastz(afasta_fn, bfasta_fn, out_fh)
     lock.release()
 
 
-def chunks(d, n):
-    # yield successive n-sized chunks from dictionary
-    all_items = sorted(d.iteritems())
-    for i in xrange(0, len(all_items), n):
-        yield all_items[i:i+n]
+def chunks(L, n):
+    # yield successive n-sized chunks from list L 
+    for i in xrange(0, len(L), n):
+        yield L[i:i+n]
+
+
+def newnames(oldname, n):
+    return ["%s.%02d" % (oldname, i) for i in xrange(n)]
 
 
 def main(cpus, afasta_fn, bfasta_fn, out_fh):
@@ -71,24 +73,26 @@ def main(cpus, afasta_fn, bfasta_fn, out_fh):
     logging.debug("Dispatch job to %d cpus" % cpus)
 
     # split input fasta into chunks
-    f = Fasta(afasta_fn)
-    temp_dir = tempfile.mkdtemp()
+    recs = list(SeqIO.parse(afasta_fn, "fasta"))
+    temp_dir = tempfile.mkdtemp(prefix=".split", dir=os.getcwd())
     names = newnames(os.path.join(temp_dir, afasta_fn), cpus)
     logging.debug("Temporary directory %s created for %s" % \
             (temp_dir, afasta_fn))
             
-    chunk_size = len(f) / cpus + 1
-    for name, chunk in itertools.izip_longest(names, chunks(f, chunk_size)):
+    chunk_size = len(recs) / cpus + 1
+    for name, chunk in zip(names, chunks(recs, chunk_size)):
         if chunk is None: break 
-        chunk_file = file(name, "w")
-        for rec, seq in chunk:
-            chunk_file.write(">%s\n%s\n" % (rec, seq))
-        chunk_file.close()
+        SeqIO.write(chunk, name, "fasta")
 
-    for i in xrange(cpus):
-        pi = Process(target=lastz_thread, 
-                     args=(lock, names[i], bfasta_fn, out_fh))
+    processes = []
+    for name in names:
+        pi = Process(target=lastz_process, 
+                     args=(lock, name, bfasta_fn, out_fh))
         pi.start()
+        processes.append(pi)
+
+    for pi in processes:
+        pi.join()
 
     shutil.rmtree(temp_dir)
 
@@ -100,10 +104,14 @@ if __name__ == '__main__':
     usage = "%prog -i query.fa -d database.fa"
 
     parser = OptionParser(usage)
-    parser.add_option("-i", dest="query", help="query sequence file in FASTA format")
-    parser.add_option("-d", dest="target", help="database sequence file in FASTA format")
-    parser.add_option("-o", dest="outfile", help="BLAST output [default: stdout]")
-    parser.add_option("-A", dest="cpus", default=1, type="int", help="serialize job to multiple cpus [default: 1]")
+    parser.add_option("-i", dest="query", 
+            help="query sequence file in FASTA format")
+    parser.add_option("-d", dest="target", 
+            help="database sequence file in FASTA format")
+    parser.add_option("-o", dest="outfile", 
+            help="BLAST output [default: stdout]")
+    parser.add_option("-A", dest="cpus", default=1, type="int", 
+            help="serialize job to multiple cpus [default: 1]")
 
     (options, args) = parser.parse_args()
 
@@ -118,5 +126,4 @@ if __name__ == '__main__':
         sys.exit(parser.print_help())
 
     main(options.cpus, afasta_fn, bfasta_fn, out_fh)
-
 
