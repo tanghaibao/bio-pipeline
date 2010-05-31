@@ -46,7 +46,7 @@ def lastz_to_blast(row):
     identity = identity.replace("%", "")
     hitlen = coverage.split("/")[1]
     score = float(score)
-    # TODO: evalue formula lookup
+
     evalue = blastz_score_to_ncbi_expectation(score)
     score = blastz_score_to_ncbi_bits(score) 
     evalue, score = "%.2g" % evalue, "%.1f" % score
@@ -59,11 +59,12 @@ def lastz(afasta_fn, bfasta_fn, out_fh):
     lastz_cmd %= (lastz_fields, bfasta_fn, afasta_fn) 
     logging.debug(lastz_cmd)
 
-    proc = Popen(lastz_cmd, bufsize=1, stdout=PIPE, stderr=PIPE, shell=True)
+    proc = Popen(lastz_cmd, bufsize=1, stdout=PIPE, shell=True)
 
     logging.debug("job <%d> started" % proc.pid)
     for row in proc.stdout:
         print >>out_fh, lastz_to_blast(row)
+        out_fh.flush()
     logging.debug("job <%d> finished" % proc.pid)
 
 
@@ -137,7 +138,7 @@ if __name__ == '__main__':
     except:
         sys.exit(parser.print_help())
 
-    if not all((options.query, options.target)):
+    if not all((afasta_fn, bfasta_fn)):
         sys.exit(parser.print_help())
 
     main(options.cpus, afasta_fn, bfasta_fn, out_fh)
