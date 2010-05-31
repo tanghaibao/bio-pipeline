@@ -99,7 +99,7 @@ if __name__ == '__main__':
     
     from optparse import OptionParser
 
-    parser = OptionParser(usage)
+    parser = OptionParser(__doc__)
     parser.add_option("-i", dest="query", 
             help="query sequence file in FASTA format")
     parser.add_option("-d", dest="target", 
