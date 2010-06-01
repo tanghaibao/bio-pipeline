@@ -13,11 +13,12 @@ import math
 import shutil
 import tempfile
 import logging
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.DEBUG)
 
 from subprocess import Popen, PIPE
-from multiprocessing import Process, cpu_count
+from multiprocessing import Process, cpu_count, Lock
 from Bio import SeqIO
+from random import shuffle
 
 
 blast_fields = "query,subject,pctid,hitlen,nmismatch,ngaps,"\
@@ -32,7 +33,7 @@ lastz_fields = "name2,name1,identity,nmismatch,ngap,"\
 blastz_score_to_ncbi_bits = lambda bz_score: bz_score * 0.0205
 
 def blastz_score_to_ncbi_expectation(bz_score):
-    bits = blastz_score_to_ncbi_bits(bz_score) 
+    bits = blastz_score_to_ncbi_bits(bz_score)
     log_prob = -bits * 0.301029996
     # this number looks like.. human genome?
     return 3.0e9 * math.exp(log_prob)
@@ -48,28 +49,34 @@ def lastz_to_blast(row):
     score = float(score)
 
     evalue = blastz_score_to_ncbi_expectation(score)
-    score = blastz_score_to_ncbi_bits(score) 
+    score = blastz_score_to_ncbi_bits(score)
     evalue, score = "%.2g" % evalue, "%.1f" % score
     return "\t".join((name1, name2, identity, hitlen, nmismatch, ngap, \
             start1, end1, start2, end2, evalue, score))
 
 
-def lastz(afasta_fn, bfasta_fn, out_fh):
+def lastz(afasta_fn, bfasta_fn, out_fh, lock):
     lastz_cmd = "lastz --format=general-:%s --ambiguous=iupac %s[multiple] %s"
-    lastz_cmd %= (lastz_fields, bfasta_fn, afasta_fn) 
+    lastz_cmd %= (lastz_fields, bfasta_fn, afasta_fn)
     logging.debug(lastz_cmd)
 
     proc = Popen(lastz_cmd, bufsize=1, stdout=PIPE, shell=True)
 
     logging.debug("job <%d> started" % proc.pid)
     for row in proc.stdout:
-        print >>out_fh, lastz_to_blast(row)
+        brow = lastz_to_blast(row)
+        lock.acquire()
+        print >>out_fh, brow
         out_fh.flush()
+        lock.release()
     logging.debug("job <%d> finished" % proc.pid)
 
 
 def chunks(L, n):
-    # yield successive n-sized chunks from list L 
+    # yield successive n-sized chunks from list L
+    # shuffle since largest chrs are often first, get bad
+    # distribution to split files.
+    shuffle(L)
     for i in xrange(0, len(L), n):
         yield L[i:i+n]
 
@@ -84,23 +91,30 @@ def main(cpus, afasta_fn, bfasta_fn, out_fh):
 
     if cpus > 1:
         # split input fasta into chunks
+        print >>sys.stderr, "splitting fasta to %i files" % cpus
         recs = list(SeqIO.parse(afasta_fn, "fasta"))
         temp_dir = tempfile.mkdtemp(prefix=".split", dir=os.getcwd())
-        names = newnames(os.path.join(temp_dir, afasta_fn), cpus)
+        names = newnames(os.path.join(temp_dir, os.path.basename(afasta_fn)), cpus)
         logging.debug("Temporary directory %s created for %s" % \
                 (temp_dir, afasta_fn))
-                
+        # TODO: make sure this works for all cases
+        # zip only exhausts shorted
         chunk_size = len(recs) / cpus + 1
+        nchunks = 0
         for name, chunk in zip(names, chunks(recs, chunk_size)):
-            if chunk is None: break 
+            if chunk is None: break
+            logging.debug("NAME:" + name)
+            nchunks += len(chunk)
             SeqIO.write(chunk, name, "fasta")
+        assert nchunks == len(recs), (nchunks, len(recs))
     else:
         names = [afasta_fn]
 
     processes = []
+    lock = Lock()
     for name in names:
         if not os.path.exists(name): continue
-        pi = Process(target=lastz, args=(name, bfasta_fn, out_fh))
+        pi = Process(target=lastz, args=(name, bfasta_fn, out_fh, lock))
         pi.start()
         processes.append(pi)
 
@@ -112,26 +126,29 @@ def main(cpus, afasta_fn, bfasta_fn, out_fh):
 
 
 if __name__ == '__main__':
-    
+
     from optparse import OptionParser
 
     parser = OptionParser(__doc__)
-    parser.add_option("-i", dest="query", 
+    parser.add_option("-i", dest="query",
             help="query sequence file in FASTA format")
-    parser.add_option("-d", dest="target", 
+    parser.add_option("-d", dest="target",
             help="database sequence file in FASTA format")
-    parser.add_option("-o", dest="outfile", 
+    parser.add_option("-o", dest="outfile",
             help="BLAST output [default: stdout]")
-    parser.add_option("-A", dest="cpus", default=1, type="int", 
+    parser.add_option("-A", dest="cpus", default=1, type="int",
             help="parallelize job to multiple cpus [default: %default]")
 
     (options, args) = parser.parse_args()
 
     try:
         afasta_fn = options.query
+        assert os.path.exists(afasta_fn), ("does not exist")
         bfasta_fn = options.target
+        assert os.path.exists(bfasta_fn), ("does not exist")
         out_fh = file(options.outfile, "w") if options.outfile else sys.stdout
-    except:
+    except Exception, e:
+        print >>sys.stderr, str(e)
         sys.exit(parser.print_help())
 
     if not all((afasta_fn, bfasta_fn)):
