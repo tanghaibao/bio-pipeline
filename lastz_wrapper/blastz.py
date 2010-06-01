@@ -68,10 +68,6 @@ def lastz(afasta_fn, bfasta_fn, out_fh):
     logging.debug("job <%d> finished" % proc.pid)
 
 
-def lastz_process(afasta_fn, bfasta_fn, out_fh):
-    lastz(afasta_fn, bfasta_fn, out_fh)
-
-
 def chunks(L, n):
     # yield successive n-sized chunks from list L 
     for i in xrange(0, len(L), n):
@@ -103,8 +99,8 @@ def main(cpus, afasta_fn, bfasta_fn, out_fh):
 
     processes = []
     for name in names:
-        pi = Process(target=lastz_process, 
-                     args=(name, bfasta_fn, out_fh))
+        if not os.path.exists(name): continue
+        pi = Process(target=lastz, args=(name, bfasta_fn, out_fh))
         pi.start()
         processes.append(pi)
 
