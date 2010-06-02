@@ -55,16 +55,16 @@ def lastz_to_blast(row):
             start1, end1, start2, end2, evalue, score))
 
 
-def lastz(afasta_fn, bfasta_fn, out_fh, lock, lastz_path):
+def lastz(k, n, bfasta_fn, out_fh, lock, lastz_path):
     lastz_bin = "lastz" if lastz_path is None else lastz_path
 
-    lastz_cmd = "%s --format=general-:%s --ambiguous=iupac %s[multiple,unmask,nameparse=darkspace] %s[unmask,nameparse=darkspace]"
-    lastz_cmd %= (lastz_bin, lastz_fields, bfasta_fn, afasta_fn)
-    logging.debug(lastz_cmd)
+    lastz_cmd = "%s --format=general-:%s --ambiguous=iupac %s[multiple,unmask,nameparse=darkspace]"\
+            " %s[unmask,nameparse=darkspace,subsample=%d/%d]"
+    lastz_cmd %= (lastz_bin, lastz_fields, bfasta_fn, afasta_fn, k, n)
 
     proc = Popen(lastz_cmd, bufsize=1, stdout=PIPE, shell=True)
 
-    logging.debug("job <%d> started" % proc.pid)
+    logging.debug("job <%d> started: %s" % (proc.pid, lastz_cmd))
     for row in proc.stdout:
         brow = lastz_to_blast(row)
         lock.acquire()
@@ -74,59 +74,21 @@ def lastz(afasta_fn, bfasta_fn, out_fh, lock, lastz_path):
     logging.debug("job <%d> finished" % proc.pid)
 
 
-def chunks(L, n):
-    # yield successive n-sized chunks from list L
-    # shuffle since largest chrs are often first, get bad
-    # distribution to split files.
-    shuffle(L)
-    for i in xrange(0, len(L), n):
-        yield L[i:i+n]
-
-
-def newnames(oldname, n):
-    return ["%s.%02d" % (oldname, i) for i in xrange(n)]
-
-
 def main(options, afasta_fn, bfasta_fn, out_fh):
 
     lastz_path = options.lastz_path
     cpus = min(options.cpus, cpu_count())
     logging.debug("Dispatch job to %d cpus" % cpus)
 
-    if cpus > 1:
-        # split input fasta into chunks
-        print >>sys.stderr, "splitting fasta to %i files" % cpus
-        recs = list(SeqIO.parse(afasta_fn, "fasta"))
-        temp_dir = tempfile.mkdtemp(prefix=".split", dir=os.getcwd())
-        names = newnames(os.path.join(temp_dir, os.path.basename(afasta_fn)), cpus)
-        logging.debug("Temporary directory %s created for %s" % \
-                (temp_dir, afasta_fn))
-        # TODO: make sure this works for all cases
-        # zip only exhausts shorted
-        chunk_size = len(recs) / cpus + 1
-        nchunks = 0
-        for name, chunk in zip(names, chunks(recs, chunk_size)):
-            if chunk is None: break
-            logging.debug("NAME:" + name)
-            nchunks += len(chunk)
-            SeqIO.write(chunk, name, "fasta")
-        assert nchunks == len(recs), (nchunks, len(recs))
-    else:
-        names = [afasta_fn]
-
     processes = []
     lock = Lock()
-    for name in names:
-        if not os.path.exists(name): continue
-        pi = Process(target=lastz, args=(name, bfasta_fn, out_fh, lock, lastz_path))
+    for k in xrange(cpus):
+        pi = Process(target=lastz, args=(k+1, cpus, bfasta_fn, out_fh, lock, lastz_path))
         pi.start()
         processes.append(pi)
 
     for pi in processes:
         pi.join()
-
-    if cpus > 1:
-        shutil.rmtree(temp_dir)
 
 
 if __name__ == '__main__':
@@ -140,7 +102,7 @@ if __name__ == '__main__':
             help="database sequence file in FASTA format")
     parser.add_option("-o", dest="outfile",
             help="BLAST output [default: stdout]")
-    parser.add_option("-A", dest="cpus", default=1, type="int",
+    parser.add_option("-a", "-A", dest="cpus", default=1, type="int",
             help="parallelize job to multiple cpus [default: %default]")
     parser.add_option("--path", dest="lastz_path", default=None,
             help="specify LASTZ path")
