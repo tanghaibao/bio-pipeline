@@ -55,9 +55,11 @@ def lastz_to_blast(row):
             start1, end1, start2, end2, evalue, score))
 
 
-def lastz(afasta_fn, bfasta_fn, out_fh, lock):
-    lastz_cmd = "lastz --format=general-:%s --ambiguous=iupac %s[multiple] %s"
-    lastz_cmd %= (lastz_fields, bfasta_fn, afasta_fn)
+def lastz(afasta_fn, bfasta_fn, out_fh, lock, lastz_path):
+    lastz_bin = "lastz" if lastz_path is None else lastz_path
+
+    lastz_cmd = "%s --format=general-:%s --ambiguous=iupac %s[multiple,unmask,nameparse=darkspace] %s[unmask,nameparse=darkspace]"
+    lastz_cmd %= (lastz_bin, lastz_fields, bfasta_fn, afasta_fn)
     logging.debug(lastz_cmd)
 
     proc = Popen(lastz_cmd, bufsize=1, stdout=PIPE, shell=True)
@@ -85,8 +87,10 @@ def newnames(oldname, n):
     return ["%s.%02d" % (oldname, i) for i in xrange(n)]
 
 
-def main(cpus, afasta_fn, bfasta_fn, out_fh):
-    cpus = min(cpus, cpu_count())
+def main(options, afasta_fn, bfasta_fn, out_fh):
+
+    lastz_path = options.lastz_path
+    cpus = min(options.cpus, cpu_count())
     logging.debug("Dispatch job to %d cpus" % cpus)
 
     if cpus > 1:
@@ -114,7 +118,7 @@ def main(cpus, afasta_fn, bfasta_fn, out_fh):
     lock = Lock()
     for name in names:
         if not os.path.exists(name): continue
-        pi = Process(target=lastz, args=(name, bfasta_fn, out_fh, lock))
+        pi = Process(target=lastz, args=(name, bfasta_fn, out_fh, lock, lastz_path))
         pi.start()
         processes.append(pi)
 
@@ -138,14 +142,16 @@ if __name__ == '__main__':
             help="BLAST output [default: stdout]")
     parser.add_option("-A", dest="cpus", default=1, type="int",
             help="parallelize job to multiple cpus [default: %default]")
+    parser.add_option("--path", dest="lastz_path", default=None,
+            help="specify LASTZ path")
 
     (options, args) = parser.parse_args()
 
     try:
         afasta_fn = options.query
-        assert os.path.exists(afasta_fn), ("does not exist")
+        assert os.path.exists(afasta_fn), ("%s does not exist" % afasta_fn)
         bfasta_fn = options.target
-        assert os.path.exists(bfasta_fn), ("does not exist")
+        assert os.path.exists(bfasta_fn), ("%s does not exist" % bfasta_fn)
         out_fh = file(options.outfile, "w") if options.outfile else sys.stdout
     except Exception, e:
         print >>sys.stderr, str(e)
@@ -154,5 +160,5 @@ if __name__ == '__main__':
     if not all((afasta_fn, bfasta_fn)):
         sys.exit(parser.print_help())
 
-    main(options.cpus, afasta_fn, bfasta_fn, out_fh)
+    main(options, afasta_fn, bfasta_fn, out_fh)
 
