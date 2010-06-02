@@ -46,6 +46,7 @@ class Anchor(list):
 
 
     def to_groups(self, distance):
+        # not used.
         g = Grouper()
         for name, anchors in itertools.groupby(self, key=lambda a, b: (a.seqid, b.seqid)):
             for ia, qa, sa in enumerate(anchors[:-1]):
@@ -54,7 +55,7 @@ class Anchor(list):
                     g.join((qa, sa), (qb, sb))
         return g
 
-    def _gen_cmds(self, qfasta, sfasta, dist, params):
+    def _gen_cmds(self, qfasta, sfasta, dist, cmd_template):
         for q, s in self:
             qstart, qend = max(1, q.start - dist - PAD), q.end + dist + PAD
             sstart, send = max(1, s.start - dist - PAD), s.end + dist + PAD
@@ -64,15 +65,20 @@ class Anchor(list):
             print >>stmp, ">%s\n%s" % (s.seqid, str(qfasta[q.seqid][qstart - 1: qend]))
             qtmp.close()
             stmp.close()
-            cmd = "bl2seq -p blastn -W 15 -D 1 -i %s -j %s; rm -f %s %s"
-            cmd %= (qtmp.name, stmp.name, qtmp.name, stmp.name)
+            query_fasta, subject_fasta = qtmp.name, stmp.name
+            cmd = cmd_template % locals()
+            cmd += "; rm -f %(query_fasta)s %(subject_fasta)s;" % locals()
             # these must match the args accepted by run_blast.
             yield cmd, qstart, sstart, q, s, dist
 
-    def gen_cmds(self, qfasta, sfasta, dist, params):
+    def gen_cmds(self, qfasta, sfasta, dist, cmd_template):
+        """
+        make it easier to parallelize by just yield a list of ncpu commands
+        at a time
+        """
         n = cpu_count()
         li = []
-        for cmd in self._gen_cmds(qfasta, sfasta, dist, params):
+        for cmd in self._gen_cmds(qfasta, sfasta, dist, cmd_template):
             li.append(cmd)
             if len(li) == n:
                 yield li
@@ -141,7 +147,7 @@ def main(qfasta, sfasta, options):
     cpus = cpu_count()
     pool = Pool(cpus)
 
-    for i, command_group in enumerate(anchors.gen_cmds(qfasta, sfasta, options.dist, options.parameters)):
+    for i, command_group in enumerate(anchors.gen_cmds(qfasta, sfasta, options.dist, options.cmd)):
         if not (i - 1) % 100:
             print >>sys.stderr, "complete: %.5f" % (((i - 1.0) * cpus) / len(anchors))
         for lines in pool.map(run_blast, command_group):
@@ -154,26 +160,30 @@ if __name__ == '__main__':
 
     import optparse
 
-    parser = optparse.OptionParser(__doc__)
-    parser.add_option("--anchors", dest="anchors",
+    p = optparse.OptionParser(__doc__)
+    p.add_option("--anchors", dest="anchors",
             help="anchors pair list either as names or integer indexes into"
                       " the bed file")
-    parser.add_option("--qbed", dest="qbed",
+    p.add_option("--qbed", dest="qbed",
             help="path to qbed")
-    parser.add_option("--sbed", dest="sbed",
+    p.add_option("--sbed", dest="sbed",
             help="path to sbed")
 
-    parser.add_option("--dist", dest="dist",
+    p.add_option("--dist", dest="dist",
             default=12000, type="int", help="The extent of flanking regions to search")
-    parser.add_option("--parameters", dest="parameters",
-            default=" -m 8 -p blastn ", help="parameters to run.")
 
-    (options, fasta_files) = parser.parse_args()
+    p.add_option("--cmd", dest="cmd", help="the command to be run, but have "
+                 "place for 'query_fasta' and 'subject_fasta' as in default "
+                  " the command must send the output to STDOUT",
+          default="bl2seq -p blastn -e 0.01 -W 15 -D 1 -i %(query_fasta)s -j %(subject_fasta)s")
+
+    (options, fasta_files) = p.parse_args()
 
     if len(fasta_files) != 2 or not \
             all((options.qbed, options.sbed, options.anchors)):
-        sys.exit(parser.print_help())
+        sys.exit(p.print_help())
+    assert "%(query_fasta)s" in options.cmd
+    assert "%(subject_fasta)s" in options.cmd
     qfasta, sfasta = fasta_files
 
     main(qfasta, sfasta, options)
-
