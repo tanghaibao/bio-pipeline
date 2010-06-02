@@ -95,6 +95,10 @@ class PositionAnchorLine(object):
         self.start = int(line[1])
         self.end   = int(line[2])
 
+    def __str__(self):
+        return "%s(%s[%i:%i])" % (self.__class__.__name__, self.seqid,
+                           self.start, self.end)
+
 class PositionAnchor(Anchor):
     def __init__(self, filename):
         for row in open(filename):
@@ -116,7 +120,14 @@ def check_locs(locs, bed_line, dist):
     """
     filter out hits that were in the PAD area
     """
-    return calc_dist(locs[0], locs[1], bed_line) <= dist
+    return is_overlapping(locs, bed_line) or \
+            calc_dist(locs[0], locs[1], bed_line) <= dist
+
+def is_overlapping(locs, bed_line):
+    if locs[1] > locs[0]:
+        locs = locs[1], locs[0]
+    return locs[1] >= bed_line.start and locs[0] <= bed_line.end
+
 
 def calc_dist(a, b, bed_line):
     return min(
@@ -131,6 +142,8 @@ def check_dist(hit, q, s, dist):
     """
     q0, q1 = hit[:2]
     s0, s1 = hit[2:]
+    over = is_overlapping((q0, q1), q) and is_overlapping((s0, s1), s)
+    if over: return True
     qdist = calc_dist(q0, q1, q)
     sdist = calc_dist(s0, s1, s)
     return ((sdist ** 2 + qdist ** 2) ** 0.5) <= dist
@@ -196,7 +209,7 @@ if __name__ == '__main__':
     p.add_option("--cmd", dest="cmd", help="the command to be run, but have "
                  "place for 'query_fasta' and 'subject_fasta' as in default "
                   " the command must send the output to STDOUT",
-          default="bl2seq -p blastn -e 0.01 -W 15 -D 1 -i %(query_fasta)s -j %(subject_fasta)s")
+          default="bl2seq -p blastn -e 0.1 -W 15 -D 1 -i %(query_fasta)s -j %(subject_fasta)s")
 
     (options, fasta_files) = p.parse_args()
 
