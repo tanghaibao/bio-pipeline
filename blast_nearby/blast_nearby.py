@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-"""
+r"""
 %prog query_fasta subject_fasta [options]
 
 wrapper for calling BLAST in the regions adjacent to given anchors
+
+if qbed and sbed are not specified, then --anchors should point to a file with format:
+    qchr\tqstart\tqend\tschr\tsstart\tsend
 
 """
 
@@ -62,7 +65,7 @@ class Anchor(list):
             qtmp = NamedTemporaryFile(delete=False)
             stmp = NamedTemporaryFile(delete=False)
             print >>qtmp, ">%s\n%s" % (q.seqid, str(qfasta[q.seqid][qstart - 1: qend]))
-            print >>stmp, ">%s\n%s" % (s.seqid, str(qfasta[q.seqid][qstart - 1: qend]))
+            print >>stmp, ">%s\n%s" % (s.seqid, str(sfasta[s.seqid][sstart - 1: send]))
             qtmp.close()
             stmp.close()
             query_fasta, subject_fasta = qtmp.name, stmp.name
@@ -85,6 +88,28 @@ class Anchor(list):
                 li = []
         if li: yield li
 
+class PositionAnchorLine(object):
+    __slots__ = ('seqid', 'start', 'end')
+    def __init__(self, line):
+        self.seqid = line[0]
+        self.start = int(line[1])
+        self.end   = int(line[2])
+
+    def __str__(self):
+        return "%s(%s[%i:%i])" % (self.__class__.__name__, self.seqid,
+                           self.start, self.end)
+
+class PositionAnchor(Anchor):
+    def __init__(self, filename):
+        for row in open(filename):
+            if row[0] == "#": continue
+            row = row.split("\t")
+            a = PositionAnchorLine(row[:3])
+            b = PositionAnchorLine(row[3:])
+            self.append((a, b))
+        self.sort(key=lambda (a, b): (a.seqid, b.seqid, a.start, b.start))
+
+
 def sh(cmd):
     proc = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
     out, err = proc.communicate()
@@ -95,7 +120,14 @@ def check_locs(locs, bed_line, dist):
     """
     filter out hits that were in the PAD area
     """
-    return calc_dist(locs[0], locs[1], bed_line) <= dist
+    return is_overlapping(locs, bed_line) or \
+            calc_dist(locs[0], locs[1], bed_line) <= dist
+
+def is_overlapping(locs, bed_line):
+    if locs[1] > locs[0]:
+        locs = locs[1], locs[0]
+    return locs[1] >= bed_line.start and locs[0] <= bed_line.end
+
 
 def calc_dist(a, b, bed_line):
     return min(
@@ -110,16 +142,16 @@ def check_dist(hit, q, s, dist):
     """
     q0, q1 = hit[:2]
     s0, s1 = hit[2:]
+    over = is_overlapping((q0, q1), q) and is_overlapping((s0, s1), s)
+    if over: return True
     qdist = calc_dist(q0, q1, q)
     sdist = calc_dist(s0, s1, s)
     return ((sdist ** 2 + qdist ** 2) ** 0.5) <= dist
 
 def run_blast(args):
-    #print >>sys.stderr, args
     cmd, qstart, sstart, q, s, dist = args
     data = []
-    for line in sh(cmd).strip().split("\n"):
-        #print >>sys.stderr, line
+    for line in (l for l in sh(cmd).strip().split("\n") if l):
         if line[0] == "#": continue
         line = line.strip().split("\t")
         # update start, stop positions based on slice.
@@ -128,6 +160,7 @@ def run_blast(args):
         if not check_locs(line[6:8], q, dist): continue
 
         line[8:10] = [l + sstart - 1 for l in line[8:10]]
+        # remove those that are outside of the window, but inside the pad.
         if not check_locs(line[8:10], s, dist): continue
 
         if not check_dist(line[6:10], q, s, dist): continue
@@ -139,11 +172,13 @@ def main(qfasta, sfasta, options):
     qfasta = Fasta(qfasta)
     sfasta = Fasta(sfasta)
 
-    qbed = Bed(options.qbed)
-    sbed = Bed(options.qbed)
+    if not (options.qbed and options.sbed):
+        anchors = PositionAnchor(options.anchors)
+    else:
+        qbed = Bed(options.qbed)
+        sbed = Bed(options.qbed)
+        anchors = Anchor(options.anchors, qbed, sbed)
 
-    anchors = Anchor(options.anchors, qbed, sbed)
-    # TODO: use shlex to parse options.params. then dict.update
     cpus = cpu_count()
     pool = Pool(cpus)
 
@@ -151,7 +186,6 @@ def main(qfasta, sfasta, options):
         if not (i - 1) % 100:
             print >>sys.stderr, "complete: %.5f" % (((i - 1.0) * cpus) / len(anchors))
         for lines in pool.map(run_blast, command_group):
-            # TODO: handle blast hits that overlap the distance cutoff and are so repeated...
             for line in lines:
                 line[6:10] = map(str, line[6:10])
                 print "\t".join(line)
@@ -175,12 +209,11 @@ if __name__ == '__main__':
     p.add_option("--cmd", dest="cmd", help="the command to be run, but have "
                  "place for 'query_fasta' and 'subject_fasta' as in default "
                   " the command must send the output to STDOUT",
-          default="bl2seq -p blastn -e 0.01 -W 15 -D 1 -i %(query_fasta)s -j %(subject_fasta)s")
+          default="bl2seq -p blastn -e 0.1 -W 15 -D 1 -i %(query_fasta)s -j %(subject_fasta)s")
 
     (options, fasta_files) = p.parse_args()
 
-    if len(fasta_files) != 2 or not \
-            all((options.qbed, options.sbed, options.anchors)):
+    if len(fasta_files) != 2 or not options.anchors:
         sys.exit(p.print_help())
     assert "%(query_fasta)s" in options.cmd
     assert "%(subject_fasta)s" in options.cmd
