@@ -10,15 +10,11 @@ run LASTZ similar to the BLAST interface, and generates -m8 tabular format
 import os
 import sys
 import math
-import shutil
-import tempfile
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
 from subprocess import Popen, PIPE
 from multiprocessing import Process, cpu_count, Lock
-from Bio import SeqIO
-from random import shuffle
 
 
 blast_fields = "query,subject,pctid,hitlen,nmismatch,ngaps,"\
