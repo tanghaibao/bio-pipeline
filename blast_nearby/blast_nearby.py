@@ -98,6 +98,7 @@ class PositionAnchorLine(object):
     def __str__(self):
         return "%s(%s[%i:%i])" % (self.__class__.__name__, self.seqid,
                            self.start, self.end)
+    __repr__ = __str__
 
 class PositionAnchor(Anchor):
     def __init__(self, filename):
@@ -124,7 +125,7 @@ def check_locs(locs, bed_line, dist):
             calc_dist(locs[0], locs[1], bed_line) <= dist
 
 def is_overlapping(locs, bed_line):
-    if locs[1] > locs[0]:
+    if locs[1] < locs[0]:
         locs = locs[1], locs[0]
     return locs[1] >= bed_line.start and locs[0] <= bed_line.end
 
@@ -178,12 +179,11 @@ def main(qfasta, sfasta, options):
         qbed = Bed(options.qbed)
         sbed = Bed(options.qbed)
         anchors = Anchor(options.anchors, qbed, sbed)
-
     cpus = cpu_count()
     pool = Pool(cpus)
 
     for i, command_group in enumerate(anchors.gen_cmds(qfasta, sfasta, options.dist, options.cmd)):
-        if not (i - 1) % 100:
+        if not (i - 1) % 500:
             print >>sys.stderr, "complete: %.5f" % (((i - 1.0) * cpus) / len(anchors))
         for lines in pool.map(run_blast, command_group):
             for line in lines:
