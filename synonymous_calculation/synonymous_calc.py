@@ -169,7 +169,7 @@ def run_mrtrans(align_fasta, rec_1, rec_2, work_dir):
     align_h.write(str(align_fasta))
     align_h.close()
     # make the nucleotide file
-    SeqIO.write((rec_1, rec_2), nuc_file, "fasta")
+    SeqIO.write((rec_1, rec_2), file(nuc_file, "w"), "fasta")
         
     # run the program
     cl = MrTransCommandline(align_file, nuc_file, output_file)
@@ -187,7 +187,7 @@ def clustal_align_protein(rec_1, rec_2, work_dir):
     """
     fasta_file = op.join(work_dir, "prot-start.fasta")
     align_file = op.join(work_dir, "prot.aln")
-    SeqIO.write((rec_1, rec_2), fasta_file, "fasta")
+    SeqIO.write((rec_1, rec_2), file(fasta_file, "w"), "fasta")
 
     clustal_cl = Clustalw.MultipleAlignCL(fasta_file, command=CLUSTALW_BIN)
     clustal_cl.set_output(align_file, output_order = 'INPUT')
