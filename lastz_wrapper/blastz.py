@@ -52,7 +52,7 @@ def lastz_to_blast(row):
 
 
 def lastz(k, n, bfasta_fn, out_fh, lock, lastz_path):
-    lastz_bin = "lastz" if lastz_path is None else lastz_path
+    lastz_bin = lastz_path or "lastz" 
 
     lastz_cmd = "%s --format=general-:%s --ambiguous=iupac %s[multiple,unmask,nameparse=darkspace]"\
             " %s[unmask,nameparse=darkspace,subsample=%d/%d]"
@@ -73,7 +73,9 @@ def lastz(k, n, bfasta_fn, out_fh, lock, lastz_path):
 def main(options, afasta_fn, bfasta_fn, out_fh):
 
     lastz_path = options.lastz_path
-    cpus = min(options.cpus, cpu_count())
+    # split on query so check query fasta sequence number
+    afasta_num = sum(1 for x in open(afasta_fn) if x[0]=='>')
+    cpus = min(options.cpus, cpu_count(), afasta_num)
     logging.debug("Dispatch job to %d cpus" % cpus)
 
     processes = []
