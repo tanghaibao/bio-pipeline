@@ -51,12 +51,12 @@ def lastz_to_blast(row):
             start1, end1, start2, end2, evalue, score))
 
 
-def lastz(k, n, bfasta_fn, out_fh, lock, lastz_path):
+def lastz(k, n, bfasta_fn, out_fh, lock, lastz_path, extra):
     lastz_bin = lastz_path or "lastz" 
 
     lastz_cmd = "%s --format=general-:%s --ambiguous=iupac %s[multiple,unmask,nameparse=darkspace]"\
-            " %s[unmask,nameparse=darkspace,subsample=%d/%d]"
-    lastz_cmd %= (lastz_bin, lastz_fields, bfasta_fn, afasta_fn, k, n)
+            " %s[unmask,nameparse=darkspace,subsample=%d/%d] %s"
+    lastz_cmd %= (lastz_bin, lastz_fields, bfasta_fn, afasta_fn, k, n, extra)
 
     proc = Popen(lastz_cmd, bufsize=1, stdout=PIPE, shell=True)
 
@@ -70,7 +70,7 @@ def lastz(k, n, bfasta_fn, out_fh, lock, lastz_path):
     logging.debug("job <%d> finished" % proc.pid)
 
 
-def main(options, afasta_fn, bfasta_fn, out_fh):
+def main(options, afasta_fn, bfasta_fn, out_fh, extra):
 
     lastz_path = options.lastz_path
     # split on query so check query fasta sequence number
@@ -81,7 +81,8 @@ def main(options, afasta_fn, bfasta_fn, out_fh):
     processes = []
     lock = Lock()
     for k in xrange(cpus):
-        pi = Process(target=lastz, args=(k+1, cpus, bfasta_fn, out_fh, lock, lastz_path))
+        pi = Process(target=lastz, args=(k+1, cpus, bfasta_fn, out_fh, lock,
+            lastz_path, extra))
         pi.start()
         processes.append(pi)
 
@@ -104,6 +105,8 @@ if __name__ == '__main__':
             help="parallelize job to multiple cpus [default: %default]")
     parser.add_option("--path", dest="lastz_path", default=None,
             help="specify LASTZ path")
+    parser.add_option("--lastz-params", dest="extra", default="",
+            help="pass in LASTZ parameter string (please quote the string)")
 
     (options, args) = parser.parse_args()
 
@@ -120,5 +123,5 @@ if __name__ == '__main__':
     if not all((afasta_fn, bfasta_fn)):
         sys.exit(parser.print_help())
 
-    main(options, afasta_fn, bfasta_fn, out_fh)
+    main(options, afasta_fn, bfasta_fn, out_fh, options.extra)
 
