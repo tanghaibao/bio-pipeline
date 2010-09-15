@@ -6,3 +6,4 @@ A collection of light bioinformatics analysis pipelines for specific tasks.
 * Blast nearby
 * Lastz wrapper
 * BioMart connector for Python
+* Performing statistical test for gap deletion models
