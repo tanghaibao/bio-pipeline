@@ -30,7 +30,7 @@ blastz_score_to_ncbi_bits = lambda bz_score: bz_score * 0.0205
 
 def blastz_score_to_ncbi_expectation(bz_score):
     bits = blastz_score_to_ncbi_bits(bz_score)
-    log_prob = -bits * 0.301029996
+    log_prob = -bits * 0.693147181 
     # this number looks like.. human genome?
     return 3.0e9 * math.exp(log_prob)
 
