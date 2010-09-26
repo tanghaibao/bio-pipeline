@@ -184,9 +184,9 @@ endobj
  0
  0 ]
  /Rect [ 383.1861
- 753.7736
+ 227.3736
  481.7844
- 765.7736 ]
+ 239.3736 ]
  /Subtype /Link
  /Type /Annot >>
 endobj
@@ -221,7 +221,7 @@ endobj
 % 'R17': class PDFInfo 
 17 0 obj
 << /Author (Haibao Tang \(tanghaibao\), Brad Chapman)
- /CreationDate (D:20100926023843+08'00')
+ /CreationDate (D:20100926033643+08'00')
  /Keywords ()
  /Producer (ReportLab http://www.reportlab.com)
  /Subject (\(unspecified\))
@@ -612,11 +612,66 @@ endobj
 % 'R24': class PDFStream 
 24 0 obj
 % page stream
-<< /Length 340 >>
+<< /Length 2181 >>
 stream
 1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
 q
-1 0 0 1 62.69291 741.0236 cm
+1 0 0 1 62.69291 753.0236 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (The script ) Tj /F4 10 Tf (report_ks.py ) Tj /F1 10 Tf (will generate a nice text-based report on the Ks output:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 719.8236 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 468.6898 24 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL ($ python report_ks.py test.ks) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 699.8236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (will generate the following report:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 246.6236 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 468.6898 444 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 422 Tm /F4 10 Tf 12 TL (File `data/test.ks` contains a total of 166 gene pairs) Tj T* (------------------------------------------------------------) Tj T* (Yang-Nielson method of Ks estimate : 0.54285) Tj T* (  0.0|===============) Tj T* (  0.2|===) Tj T* (  0.4|=============) Tj T* (  0.6|======) Tj T* (  0.8|====) Tj T* (  1.0|===) Tj T* (  1.2|=) Tj T* (  1.4|) Tj T* (  1.6|) Tj T* (  1.8|) Tj T* (Yang-Nielson method of Ka estimate : 0.0697) Tj T* (  0.0|===============================) Tj T* (  0.1|===========) Tj T* (  0.2|===) Tj T* (  0.3|==) Tj T* (  0.4|) Tj T* (Nei-Gojobori method of Ks estimate : 0.45565) Tj T* (  0.0|=================) Tj T* (  0.2|====) Tj T* (  0.4|===============) Tj T* (  0.6|========) Tj T* (  0.8|=) Tj T* (  1.0|=) Tj T* (  1.2|) Tj T* (  1.4|) Tj T* (  1.6|) Tj T* (  1.8|) Tj T* (Nei-Gojobori method of Ka estimate : 0.067) Tj T* (  0.0|===============================) Tj T* (  0.1|===========) Tj T* (  0.2|====) Tj T* (  0.3|===) Tj T* (  0.4|) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 214.6236 cm
 q
 BT 1 0 0 1 0 14 Tm 1.784147 Tw 12 TL /F1 10 Tf 0 0 0 rg (I personally recommend Nei-Gojobori method, from past experience. ) Tj 0 0 .501961 rg (Nei-Gojobori method ) Tj 0 0 0 rg (is a simple) Tj T* 0 Tw (correction for multiple substitutions.) Tj T* ET
 Q
@@ -654,11 +709,11 @@ xref
 trailer
 << /ID 
  % ReportLab generated PDF document -- digest (http://www.reportlab.com) 
- [(\211\011?R\017\226\215\025\321#\017\321\(\256\002-) (\211\011?R\017\226\215\025\321#\017\321\(\256\002-)] 
+ [(\266N\261\221Z\323\212/\323N`\270\327\013U\214) (\266N\261\221Z\323\212/\323N`\270\327\013U\214)] 
 
  /Info 17 0 R
  /Root 16 0 R
  /Size 25 >>
 startxref
-12265
+14107
 %%EOF

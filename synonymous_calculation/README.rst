@@ -55,4 +55,50 @@ The result is a comma-delimited file, you can open it in EXCEL, columns correspo
 
     Pair_ID; Yang-Nielson method Ks, Yang-Nielson method Ka, Nei-Gojobori method Ks, Nei-Gojobori method Ka
 
+The script ``report_ks.py`` will generate a nice text-based report on the Ks
+output::
+
+    $ python report_ks.py test.ks
+
+will generate the following report::
+
+    File `data/test.ks` contains a total of 166 gene pairs
+    ------------------------------------------------------------
+    Yang-Nielson method of Ks estimate : 0.54285
+      0.0|===============
+      0.2|===
+      0.4|=============
+      0.6|======
+      0.8|====
+      1.0|===
+      1.2|=
+      1.4|
+      1.6|
+      1.8|
+    Yang-Nielson method of Ka estimate : 0.0697
+      0.0|===============================
+      0.1|===========
+      0.2|===
+      0.3|==
+      0.4|
+    Nei-Gojobori method of Ks estimate : 0.45565
+      0.0|=================
+      0.2|====
+      0.4|===============
+      0.6|========
+      0.8|=
+      1.0|=
+      1.2|
+      1.4|
+      1.6|
+      1.8|
+    Nei-Gojobori method of Ka estimate : 0.067
+      0.0|===============================
+      0.1|===========
+      0.2|====
+      0.3|===
+      0.4|
+
 I personally recommend Nei-Gojobori method, from past experience. `Nei-Gojobori method <http://www.megasoftware.net/WebHelp/part_iv___evolutionary_analysis/computing_evolutionary_distances/distance_models/synonymouse_and_nonsynonymous_substitution_models/hc_modified_nei_gojobori_method.htm>`_ is a simple correction for multiple substitutions.
+
+
