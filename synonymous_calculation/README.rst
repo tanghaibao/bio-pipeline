@@ -1,6 +1,11 @@
 Ks calculation script
 ======================
 
+:Author: Haibao Tang (`tanghaibao <http://github.com/tanghaibao>`_), Brad Chapman
+:Email: tanghaibao@gmail.com
+:License: `BSD <http://creativecommons.org/licenses/BSD/>`_
+
+
 Installation
 -------------
 The python script will run on Linux operation system. To install, you must have the following softwares in place, please contact system admin if you do not know how to install,
@@ -10,11 +15,15 @@ The python script will run on Linux operation system. To install, you must have 
 * `PAL2NAL <http://coot.embl.de/pal2nal/>`_
 * `PAML <http://abacus.gene.ucl.ac.uk/software/paml.html>`_
 
-Please remember the installation path for CLUSTALW, PAL2NAL and PAML. You will then need to modify the script ``synonymous_calc.py`` line ``19-21`` to change the path.
+Please remember the installation path for CLUSTALW, PAL2NAL and PAML. You will then need to modify the script ``synonymous_calc.py`` line ``~20`` to change to the absolute path.
 
 Preparing data
 ---------------
-You need to prepare two FASTA files, one file with protein seqs, one file with gene seqs, they contain the gene pairs::
+The input file is Fasta formatted, at least the CDS (coding DNA sequence) file
+needs to be given. Another protein sequence file is optional (if not given, the
+script will first try to translate the CDS file). The names for consecutive
+records are the gene pairs in which you wish to calculate Ks and Ka, like the
+following::
 
     >gene1
     ATAGATATATATA
@@ -31,9 +40,18 @@ Usage
 ------
 Finally, run the command like this::
 
-    $ python synonymous_calc.py test.pep test.cds test.ks
+    $ python synonymous_calc.py test.pep test.cds >test.ks
 
-where ``test.pep`` is your protein file, ``test.cds`` is your CDS file and your result is in ``test.ks``. The result is a comma-delimited file, you can open it in EXCEL, columns correspond to::
+where ``test.pep`` is your protein file, ``test.cds`` is your CDS file and your result is in ``test.ks``. 
+
+You can in fact skip the protein file (``test.pep``), and only provide the CDS
+file (``test.cds``). The program will just assume the CDS file contains the
+frame-0 sequence and generate a file with translated sequence and continue. So
+the following command will also work::
+
+    $ python synonymous_calc.py test.cds >test.ks
+
+The result is a comma-delimited file, you can open it in EXCEL, columns correspond to::
 
     Pair_ID; Yang-Nielson method Ks, Yang-Nielson method Ka, Nei-Gojobori method Ks, Nei-Gojobori method Ka
 

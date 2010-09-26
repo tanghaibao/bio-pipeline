@@ -2,9 +2,14 @@
 # -*- coding: UTF-8 -*-
 
 """
-%prog.py <protein file> <nucleotide file> <output file>
+%prog [protein file] <nucleotide file>
 
-Author: Brad Chapman, Haibao Tang
+protein file is optional. If only one file is given, it is assumed to
+be CDS sequences with correct frame (frame 0). Results will be written to
+stdout. Both protein file and nucleotide file are assumed to be Fasta format,
+with adjacent records as the pairs to compare.
+
+Author: Haibao Tang <bao@uga.edu>, Brad Chapman
 Calculate synonymous mutation rates for gene pairs
 
 This does the following:
@@ -65,12 +70,33 @@ class MrTransCommandline(AbstractCommandline):
         return self.command + " %s %s -output paml> %s" % (self.prot_align_file, self.nuc_file, self.output_file)
 
 
-def main(protein_file, dna_file, output_file):
-    output_h = open(output_file, "w")
+def translate_dna(dna_file):
+    '''
+    Translate the seqs in dna_file and produce a protein_file
+    '''
+    protein_file = dna_file + ".pep"
+    translated = []
+    for rec in SeqIO.parse(open(dna_file), "fasta"):
+        rec.seq = rec.seq.translate()
+        translated.append(rec)
+
+    protein_h = open(protein_file, "w")
+    SeqIO.write(translated, protein_h, "fasta")
+
+    print >>sys.stderr, "%d records written to %s" % (len(translated),
+            protein_file)
+    return protein_file
+
+
+def main(dna_file, protein_file=None, output_h=sys.stdout):
     output_h.write("name,dS-yn,dN-yn,dS-ng,dN-ng\n")
     work_dir = op.join(os.getcwd(), "syn_analysis")
     if not op.exists(work_dir):
         os.makedirs(work_dir)
+    
+    if not protein_file:
+        protein_file = translate_dna(dna_file)
+
     prot_iterator = SeqIO.parse(open(protein_file), "fasta")
     dna_iterator = SeqIO.parse(open(dna_file), "fasta")
     for p_rec_1, p_rec_2, n_rec_1, n_rec_2 in \
@@ -206,10 +232,13 @@ if __name__ == "__main__":
     p = OptionParser(__doc__)
     options, args = p.parse_args()
 
-    if len(args) != 3:
+    if len(args) == 1:
+        protein_file, dna_file = None, args[0]
+    elif len(args) == 2:
+        protein_file, dna_file = args
+    else:
         print >>sys.stderr, "Incorrect arguments"
         sys.exit(p.print_help())
 
-    protein_file, dna_file, output_file = args
-    main(protein_file, dna_file, output_file)
+    main(dna_file, protein_file)
 

@@ -6,7 +6,7 @@
 << /F1 2 0 R
  /F2 3 0 R
  /F3 4 0 R
- /F4 9 0 R >>
+ /F4 12 0 R >>
 endobj
 % 'F1': class PDFType1Font 
 2 0 obj
@@ -39,14 +39,14 @@ endobj
 5 0 obj
 << /A << /S /URI
  /Type /Action
- /URI (http://www.biopython.org) >>
+ /URI (http://github.com/tanghaibao) >>
  /Border [ 0
  0
  0 ]
- /Rect [ 85.69291
- 663.7736
- 129.0529
- 675.7736 ]
+ /Rect [ 217.0923
+ 719.7736
+ 266.5723
+ 731.7736 ]
  /Subtype /Link
  /Type /Annot >>
 endobj
@@ -54,14 +54,14 @@ endobj
 6 0 obj
 << /A << /S /URI
  /Type /Action
- /URI (http://www.ebi.ac.uk/Tools/clustalw2/index.html) >>
+ /URI (mailto:tanghaibao@gmail.com) >>
  /Border [ 0
  0
  0 ]
- /Rect [ 85.69291
- 648.7736
- 140.1429
- 660.7736 ]
+ /Rect [ 153.7323
+ 704.7736
+ 526.5827
+ 716.7736 ]
  /Subtype /Link
  /Type /Annot >>
 endobj
@@ -69,14 +69,14 @@ endobj
 7 0 obj
 << /A << /S /URI
  /Type /Action
- /URI (http://coot.embl.de/pal2nal/) >>
+ /URI (http://creativecommons.org/licenses/BSD/) >>
  /Border [ 0
  0
  0 ]
- /Rect [ 85.69291
- 633.7736
- 129.6029
- 645.7736 ]
+ /Rect [ 153.7323
+ 689.7736
+ 174.2923
+ 701.7736 ]
  /Subtype /Link
  /Type /Annot >>
 endobj
@@ -84,19 +84,64 @@ endobj
 8 0 obj
 << /A << /S /URI
  /Type /Action
+ /URI (http://www.biopython.org) >>
+ /Border [ 0
+ 0
+ 0 ]
+ /Rect [ 85.69291
+ 608.7736
+ 129.0529
+ 620.7736 ]
+ /Subtype /Link
+ /Type /Annot >>
+endobj
+% 'Annot.NUMBER5': class PDFDictionary 
+9 0 obj
+<< /A << /S /URI
+ /Type /Action
+ /URI (http://www.ebi.ac.uk/Tools/clustalw2/index.html) >>
+ /Border [ 0
+ 0
+ 0 ]
+ /Rect [ 85.69291
+ 593.7736
+ 140.1429
+ 605.7736 ]
+ /Subtype /Link
+ /Type /Annot >>
+endobj
+% 'Annot.NUMBER6': class PDFDictionary 
+10 0 obj
+<< /A << /S /URI
+ /Type /Action
+ /URI (http://coot.embl.de/pal2nal/) >>
+ /Border [ 0
+ 0
+ 0 ]
+ /Rect [ 85.69291
+ 578.7736
+ 129.6029
+ 590.7736 ]
+ /Subtype /Link
+ /Type /Annot >>
+endobj
+% 'Annot.NUMBER7': class PDFDictionary 
+11 0 obj
+<< /A << /S /URI
+ /Type /Action
  /URI (http://abacus.gene.ucl.ac.uk/software/paml.html) >>
  /Border [ 0
  0
  0 ]
  /Rect [ 85.69291
- 618.7736
+ 563.7736
  112.9229
- 630.7736 ]
+ 575.7736 ]
  /Subtype /Link
  /Type /Annot >>
 endobj
 % 'F4': class PDFType1Font 
-9 0 obj
+12 0 obj
 % Font Courier
 << /BaseFont /Courier
  /Encoding /WinAnsiEncoding
@@ -104,35 +149,22 @@ endobj
  /Subtype /Type1
  /Type /Font >>
 endobj
-% 'Annot.NUMBER5': class PDFDictionary 
-10 0 obj
-<< /A << /S /URI
- /Type /Action
- /URI (http://www.megasoftware.net/WebHelp/part_iv___evolutionary_analysis/computing_evolutionary_distances/distance_models/synonymouse_and_nonsynonymous_substitution_models/hc_modified_nei_gojobori_method.htm) >>
- /Border [ 0
- 0
- 0 ]
- /Rect [ 383.1861
- 210.6138
- 481.7844
- 222.6138 ]
- /Subtype /Link
- /Type /Annot >>
-endobj
 % 'Page1': class PDFPage 
-11 0 obj
+13 0 obj
 % Page dictionary
 << /Annots [ 5 0 R
  6 0 R
  7 0 R
  8 0 R
- 10 0 R ]
- /Contents 19 0 R
+ 9 0 R
+ 10 0 R
+ 11 0 R ]
+ /Contents 23 0 R
  /MediaBox [ 0
  0
  595.2756
  841.8898 ]
- /Parent 18 0 R
+ /Parent 22 0 R
  /Resources << /Font 1 0 R
  /ProcSet [ /PDF
  /Text
@@ -143,75 +175,111 @@ endobj
  /Trans <<  >>
  /Type /Page >>
 endobj
-% 'R12': class PDFCatalog 
-12 0 obj
+% 'Annot.NUMBER8': class PDFDictionary 
+14 0 obj
+<< /A << /S /URI
+ /Type /Action
+ /URI (http://www.megasoftware.net/WebHelp/part_iv___evolutionary_analysis/computing_evolutionary_distances/distance_models/synonymouse_and_nonsynonymous_substitution_models/hc_modified_nei_gojobori_method.htm) >>
+ /Border [ 0
+ 0
+ 0 ]
+ /Rect [ 383.1861
+ 753.7736
+ 481.7844
+ 765.7736 ]
+ /Subtype /Link
+ /Type /Annot >>
+endobj
+% 'Page2': class PDFPage 
+15 0 obj
+% Page dictionary
+<< /Annots [ 14 0 R ]
+ /Contents 24 0 R
+ /MediaBox [ 0
+ 0
+ 595.2756
+ 841.8898 ]
+ /Parent 22 0 R
+ /Resources << /Font 1 0 R
+ /ProcSet [ /PDF
+ /Text
+ /ImageB
+ /ImageC
+ /ImageI ] >>
+ /Rotate 0
+ /Trans <<  >>
+ /Type /Page >>
+endobj
+% 'R16': class PDFCatalog 
+16 0 obj
 % Document Root
-<< /Outlines 14 0 R
+<< /Outlines 18 0 R
  /PageMode /UseNone
- /Pages 18 0 R
+ /Pages 22 0 R
  /Type /Catalog >>
 endobj
-% 'R13': class PDFInfo 
-13 0 obj
-<< /Author ()
- /CreationDate (D:20100713052935+08'00')
+% 'R17': class PDFInfo 
+17 0 obj
+<< /Author (Haibao Tang \(tanghaibao\), Brad Chapman)
+ /CreationDate (D:20100926023843+08'00')
  /Keywords ()
  /Producer (ReportLab http://www.reportlab.com)
  /Subject (\(unspecified\))
  /Title (Ks calculation script) >>
 endobj
-% 'R14': class PDFOutlines 
-14 0 obj
+% 'R18': class PDFOutlines 
+18 0 obj
 << /Count 3
- /First 15 0 R
- /Last 17 0 R
+ /First 19 0 R
+ /Last 21 0 R
  /Type /Outlines >>
 endobj
 % 'Outline.0': class OutlineEntryObject 
-15 0 obj
-<< /Dest [ 11 0 R
+19 0 obj
+<< /Dest [ 13 0 R
  /XYZ
  62.69291
- 729.0236
+ 674.0236
  0 ]
- /Next 16 0 R
- /Parent 14 0 R
+ /Next 20 0 R
+ /Parent 18 0 R
  /Title (Installation) >>
 endobj
 % 'Outline.1': class OutlineEntryObject 
-16 0 obj
-<< /Dest [ 11 0 R
+20 0 obj
+<< /Dest [ 13 0 R
  /XYZ
  62.69291
- 573.0236
+ 518.0236
  0 ]
- /Next 17 0 R
- /Parent 14 0 R
- /Prev 15 0 R
+ /Next 21 0 R
+ /Parent 18 0 R
+ /Prev 19 0 R
  /Title (Preparing data) >>
 endobj
 % 'Outline.2': class OutlineEntryObject 
-17 0 obj
-<< /Dest [ 11 0 R
+21 0 obj
+<< /Dest [ 13 0 R
  /XYZ
  62.69291
- 360.8236
+ 293.8236
  0 ]
- /Parent 14 0 R
- /Prev 16 0 R
+ /Parent 18 0 R
+ /Prev 20 0 R
  /Title (Usage) >>
 endobj
-% 'R18': class PDFPages 
-18 0 obj
+% 'R22': class PDFPages 
+22 0 obj
 % page tree
-<< /Count 1
- /Kids [ 11 0 R ]
+<< /Count 2
+ /Kids [ 13 0 R
+ 15 0 R ]
  /Type /Pages >>
 endobj
-% 'R19': class PDFStream 
-19 0 obj
+% 'R23': class PDFStream 
+23 0 obj
 % page stream
-<< /Length 5030 >>
+<< /Length 6832 >>
 stream
 1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
 q
@@ -221,23 +289,85 @@ BT 1 0 0 1 0 4 Tm 137.1349 0 Td 24 TL /F2 20 Tf 0 0 0 rg (Ks calculation script)
 Q
 Q
 q
-1 0 0 1 62.69291 708.0236 cm
+1 0 0 1 62.69291 716.0236 cm
+0 0 0 rg
+BT /F3 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL 36.93937 0 Td (Author:) Tj T* -36.93937 0 Td ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Haibao Tang \() Tj 0 0 .501961 rg (tanghaibao) Tj 0 0 0 rg (\), Brad Chapman) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 701.0236 cm
+0 0 0 rg
+BT /F3 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL 43.02937 0 Td (Email:) Tj T* -43.02937 0 Td ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+q
+0 0 .501961 rg
+0 0 .501961 RG
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (tanghaibao@gmail.com) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 686.0236 cm
+0 0 0 rg
+BT /F3 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL 32.46937 0 Td (License:) Tj T* -32.46937 0 Td ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (BSD) Tj  T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 653.0236 cm
 q
 BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Installation) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 678.0236 cm
+1 0 0 1 62.69291 623.0236 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL .538221 Tw (The python script will run on Linux operation system. To install, you must have the following softwares in) Tj T* 0 Tw (place, please contact system admin if you do not know how to install,) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 678.0236 cm
+1 0 0 1 62.69291 623.0236 cm
 Q
 q
-1 0 0 1 62.69291 660.0236 cm
+1 0 0 1 62.69291 605.0236 cm
 0 0 0 rg
 BT /F3 10 Tf 12 TL ET
 q
@@ -257,13 +387,13 @@ q
 Q
 Q
 q
-1 0 0 1 62.69291 660.0236 cm
+1 0 0 1 62.69291 605.0236 cm
 Q
 q
-1 0 0 1 62.69291 663.0236 cm
+1 0 0 1 62.69291 608.0236 cm
 Q
 q
-1 0 0 1 62.69291 645.0236 cm
+1 0 0 1 62.69291 590.0236 cm
 0 0 0 rg
 BT /F3 10 Tf 12 TL ET
 q
@@ -283,13 +413,13 @@ q
 Q
 Q
 q
-1 0 0 1 62.69291 645.0236 cm
+1 0 0 1 62.69291 590.0236 cm
 Q
 q
-1 0 0 1 62.69291 648.0236 cm
+1 0 0 1 62.69291 593.0236 cm
 Q
 q
-1 0 0 1 62.69291 630.0236 cm
+1 0 0 1 62.69291 575.0236 cm
 0 0 0 rg
 BT /F3 10 Tf 12 TL ET
 q
@@ -309,13 +439,13 @@ q
 Q
 Q
 q
-1 0 0 1 62.69291 630.0236 cm
+1 0 0 1 62.69291 575.0236 cm
 Q
 q
-1 0 0 1 62.69291 633.0236 cm
+1 0 0 1 62.69291 578.0236 cm
 Q
 q
-1 0 0 1 62.69291 615.0236 cm
+1 0 0 1 62.69291 560.0236 cm
 0 0 0 rg
 BT /F3 10 Tf 12 TL ET
 q
@@ -335,29 +465,29 @@ q
 Q
 Q
 q
-1 0 0 1 62.69291 615.0236 cm
+1 0 0 1 62.69291 560.0236 cm
 Q
 q
-1 0 0 1 62.69291 585.0236 cm
+1 0 0 1 62.69291 530.0236 cm
 q
-BT 1 0 0 1 0 14 Tm .053318 Tw 12 TL /F1 10 Tf 0 0 0 rg (Please remember the installation path for CLUSTALW, PAL2NAL and PAML. You will then need to modify) Tj T* 0 Tw (the script ) Tj /F4 10 Tf (synonymous_calc.py ) Tj /F1 10 Tf (line ) Tj /F4 10 Tf (19-21 ) Tj /F1 10 Tf (to change the path.) Tj T* ET
+BT 1 0 0 1 0 14 Tm .053318 Tw 12 TL /F1 10 Tf 0 0 0 rg (Please remember the installation path for CLUSTALW, PAL2NAL and PAML. You will then need to modify) Tj T* 0 Tw (the script ) Tj /F4 10 Tf (synonymous_calc.py ) Tj /F1 10 Tf (line ) Tj /F4 10 Tf (~20 ) Tj /F1 10 Tf (to change to the absolute path.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 552.0236 cm
+1 0 0 1 62.69291 497.0236 cm
 q
 BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Preparing data) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 522.0236 cm
+1 0 0 1 62.69291 455.0236 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL .303145 Tw (You need to prepare two FASTA files, one file with protein seqs, one file with gene seqs, they contain the) Tj T* 0 Tw (gene pairs:) Tj T* ET
+BT 1 0 0 1 0 26 Tm /F1 10 Tf 12 TL .259431 Tw (The input file is Fasta formatted, at least the CDS \(coding DNA sequence\) file needs to be given. Another) Tj T* 0 Tw .657356 Tw (protein sequence file is optional \(if not given, the script will first try to translate the CDS file\). The names) Tj T* 0 Tw (for consecutive records are the gene pairs in which you wish to calculate Ks and Ka, like the following:) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 404.8236 cm
+1 0 0 1 62.69291 337.8236 cm
 q
 q
 1 0 0 1 0 0 cm
@@ -377,27 +507,27 @@ Q
 Q
 Q
 q
-1 0 0 1 62.69291 372.8236 cm
+1 0 0 1 62.69291 305.8236 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 2.993555 Tw (This will calculate two pairs: gene1-gene2 and gene3-gene4. Make sure that your protein seq file) Tj T* 0 Tw (corresponds to your gene seq file, in exactly the same order.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 339.8236 cm
+1 0 0 1 62.69291 272.8236 cm
 q
 BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Usage) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 321.8236 cm
+1 0 0 1 62.69291 254.8236 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Finally, run the command like this:) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 288.6236 cm
+1 0 0 1 62.69291 221.6236 cm
 q
 q
 1 0 0 1 0 0 cm
@@ -410,21 +540,53 @@ q
 n -6 -6 468.6898 24 re B*
 Q
 q
+BT 1 0 0 1 0 2 Tm 12 TL /F4 10 Tf 0 0 0 rg ($ python synonymous_calc.py test.pep test.cds ) Tj (>) Tj (test.ks) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 201.6236 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (where ) Tj /F4 10 Tf (test.pep ) Tj /F1 10 Tf (is your protein file, ) Tj /F4 10 Tf (test.cds ) Tj /F1 10 Tf (is your CDS file and your result is in ) Tj /F4 10 Tf (test.ks) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 159.6236 cm
+q
+BT 1 0 0 1 0 26 Tm .28528 Tw 12 TL /F1 10 Tf 0 0 0 rg (You can in fact skip the protein file \() Tj /F4 10 Tf (test.pep) Tj /F1 10 Tf (\), and only provide the CDS file \() Tj /F4 10 Tf (test.cds) Tj /F1 10 Tf (\). The program) Tj T* 0 Tw .292485 Tw (will just assume the CDS file contains the frame-0 sequence and generate a file with translated sequence) Tj T* 0 Tw (and continue. So the following command will also work:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 126.4236 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 468.6898 24 re B*
+Q
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F4 10 Tf 0 0 0 rg ($ python synonymous_calc.py test.cds ) Tj (>) Tj (test.ks) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 106.4236 cm
+q
 0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL ($ python synonymous_calc.py test.pep test.cds test.ks) Tj T* ET
-Q
-Q
-Q
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (The result is a comma-delimited file, you can open it in EXCEL, columns correspond to:) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 256.6236 cm
-q
-BT 1 0 0 1 0 14 Tm 1.294692 Tw 12 TL /F1 10 Tf 0 0 0 rg (where ) Tj /F4 10 Tf (test.pep ) Tj /F1 10 Tf (is your protein file, ) Tj /F4 10 Tf (test.cds ) Tj /F1 10 Tf (is your CDS file and your result is in ) Tj /F4 10 Tf (test.ks) Tj /F1 10 Tf (. The) Tj T* 0 Tw (result is a comma-delimited file, you can open it in EXCEL, columns correspond to:) Tj T* ET
-Q
-Q
-q
-1 0 0 1 62.69291 229.8638 cm
+1 0 0 1 62.69291 79.66376 cm
 q
 q
 .744439 0 0 .744439 0 0 cm
@@ -444,8 +606,17 @@ Q
 Q
 Q
 Q
+ 
+endstream
+endobj
+% 'R24': class PDFStream 
+24 0 obj
+% page stream
+<< /Length 340 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
 q
-1 0 0 1 62.69291 197.8638 cm
+1 0 0 1 62.69291 741.0236 cm
 q
 BT 1 0 0 1 0 14 Tm 1.784147 Tw 12 TL /F1 10 Tf 0 0 0 rg (I personally recommend Nei-Gojobori method, from past experience. ) Tj 0 0 .501961 rg (Nei-Gojobori method ) Tj 0 0 0 rg (is a simple) Tj T* 0 Tw (correction for multiple substitutions.) Tj T* ET
 Q
@@ -454,35 +625,40 @@ Q
 endstream
 endobj
 xref
-0 20
+0 25
 0000000000 65535 f
 0000000113 00000 n
-0000000245 00000 n
-0000000410 00000 n
-0000000585 00000 n
-0000000766 00000 n
-0000001008 00000 n
-0000001273 00000 n
-0000001519 00000 n
-0000001772 00000 n
-0000001945 00000 n
-0000002352 00000 n
-0000002686 00000 n
-0000002824 00000 n
-0000003057 00000 n
-0000003182 00000 n
-0000003355 00000 n
-0000003545 00000 n
-0000003695 00000 n
-0000003803 00000 n
+0000000246 00000 n
+0000000411 00000 n
+0000000586 00000 n
+0000000767 00000 n
+0000001013 00000 n
+0000001258 00000 n
+0000001516 00000 n
+0000001758 00000 n
+0000002023 00000 n
+0000002270 00000 n
+0000002524 00000 n
+0000002684 00000 n
+0000003048 00000 n
+0000003455 00000 n
+0000003757 00000 n
+0000003895 00000 n
+0000004168 00000 n
+0000004293 00000 n
+0000004466 00000 n
+0000004656 00000 n
+0000004806 00000 n
+0000004923 00000 n
+0000011854 00000 n
 trailer
 << /ID 
  % ReportLab generated PDF document -- digest (http://www.reportlab.com) 
- [(@\323\277F"j\244\347\363\335\243\303 \374\(s) (@\323\277F"j\244\347\363\335\243\303 \374\(s)] 
+ [(\211\011?R\017\226\215\025\321#\017\321\(\256\002-) (\211\011?R\017\226\215\025\321#\017\321\(\256\002-)] 
 
- /Info 13 0 R
- /Root 12 0 R
- /Size 20 >>
+ /Info 17 0 R
+ /Root 16 0 R
+ /Size 25 >>
 startxref
-8905
+12265
 %%EOF
