@@ -39,10 +39,13 @@ class Anchor(list):
         # index by name.
         if not self.raw:
             qbed, sbed = qbed.get_order(), sbed.get_order()
+            # it comes with number, line, just want line.
+            qbed = dict((k, v[1]) for k, v in qbed.iteritems())
+            sbed = dict((k, v[1]) for k, v in sbed.iteritems())
 
         for line in fh:
             if line[0] == "#": continue
-            line = line.split("\t")
+            line = line.rstrip().split("\t")
             q, s = (int(line[1]), int(line[3])) if self.raw else line[:2]
             self.append((qbed[q], sbed[s]))
         self.sort(key=lambda (a, b): (a.seqid, b.seqid, a.start, b.start, a.accn))
@@ -177,7 +180,7 @@ def main(qfasta, sfasta, options):
         anchors = PositionAnchor(options.anchors)
     else:
         qbed = Bed(options.qbed)
-        sbed = Bed(options.qbed)
+        sbed = Bed(options.sbed)
         anchors = Anchor(options.anchors, qbed, sbed)
     cpus = cpu_count()
     pool = Pool(cpus)
