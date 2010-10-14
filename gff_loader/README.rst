@@ -15,4 +15,15 @@ Both packages are easy-installable::
 
 Usage
 ------
-Just locate the GFF file and the FASTA file, and then run the script.
+Just locate the GFF file and the FASTA file, and then run the script::
+
+    $ ./gff_loader.py athaliana.gff athaliana.fa 
+
+This by default, extracts the ``mRNA`` IDs and pull out all subfeatures (``CDS``)
+that have the same parent and concatenate the seqs together, reverse-complement
+if needed. However sometimes the GFF does not use the standard names, this is
+when you need to do::
+
+    $ ./gff_loader.py athaliana.gff athaliana.fa --parents Gene --children exon
+
+If the GFF has meant coding sequences, but uses a different term.
