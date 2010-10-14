@@ -34,7 +34,6 @@ def main(gff_file, fasta_file, parents, children):
 
     for feat in parents_list:
 
-        print ">%s" % feat.id
         children = []
         for c in g.children(feat.id, 1):
 
@@ -43,11 +42,17 @@ def main(gff_file, fasta_file, parents, children):
                 strand=c.strand))
             children.append((child, c))
 
+        if not children: 
+            print >>sys.stderr, "[warning] %s has no children with type %s" \
+                                    % (feat.id, ','.join(children_list))
+            continue
         # sort children in incremental position
         children.sort(key=lambda x: x[1].start)
         # reverse children if negative strand
         if feat.strand=='-': children.reverse()
         feat_seq = ''.join(x[0] for x in children)
+
+        print ">%s" % feat.id
         print feat_seq
 
 
