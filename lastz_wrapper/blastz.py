@@ -54,7 +54,9 @@ def lastz_to_blast(row):
 def lastz(k, n, bfasta_fn, out_fh, lock, lastz_path, extra):
     lastz_bin = lastz_path or "lastz" 
 
-    lastz_cmd = "%s --format=general-:%s --ambiguous=iupac %s[multiple,unmask,nameparse=darkspace]"\
+    lastz_cmd = "%s --format=general-:%s "\
+            "--chain "\
+            "--ambiguous=iupac %s[multiple,unmask,nameparse=darkspace]"\
             " %s[unmask,nameparse=darkspace,subsample=%d/%d] %s"
     lastz_cmd %= (lastz_bin, lastz_fields, bfasta_fn, afasta_fn, k, n, extra)
 
