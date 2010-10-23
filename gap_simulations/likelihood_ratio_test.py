@@ -5,7 +5,8 @@
 [usage] %prog block_name
 To test for nested models in the simulation of gaps after polyploidy:
 
-estimate the likelihood for model 1, 2, 3, ..
+estimate the likelihood for model 1, 2, 3, .. (all the files need to be in
+`sims/` folder)
 - actual observations in 'actual.1.A.txt'
 - model 1 (allowing deletion size of 1) in 'sim.1.A.txt'
 - model 2 (allowing deletion size of 1, 2) in 'sim.2.A.txt'
@@ -14,15 +15,15 @@ each model will allow one more deletion size in brentp's genetic algorithm
 see <http://code.google.com/p/bpbio/source/browse/trunk/scripts/fractionation/>
 
 Likelihood ratio test follows to see which model gives the best likelihood while
-keeping the model as simple as possible (Occam's Razer)
-'''
+keeping the model as simple as possible (Occam's Razer) '''
 
+import os
 import sys
 import numpy as np
 
 from scipy.stats import chisqprob
 
-prefix = "small.runs.a.deletions."
+prefix = "runs.a.deletions."
 N = 10 # ignore deletion size >N 
 
 
@@ -84,6 +85,8 @@ def pairwise(iterable):
 
 def main(block='A'):
 
+    os.chdir('sims')
+
     print 'Summarizing models for block %s' % block
     print_banner('=')
     counts = read_distribution(prefix + 'actual.1.%s.txt' % block)
@@ -106,8 +109,11 @@ def main(block='A'):
 
 
 if __name__ == '__main__':
+
+    from optparse import OptionParser
+
+    p = OptionParser(__doc__)
     if len(sys.argv) != 2:
-        print >>sys.stderr, __doc__
-        sys.exit(1)
+        sys.exit(p.print_help())
 
     main(block=sys.argv[1])
