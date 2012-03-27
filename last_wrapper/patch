@@ -1,0 +1,150 @@
+diff --git a/Alignment.hh b/Alignment.hh
+index e7ecd41..3c65ea1 100644
+--- a/Alignment.hh
++++ b/Alignment.hh
+@@ -89,6 +89,10 @@ struct Alignment{
+ 		 char strand, bool isTranslated, const Alphabet& alph,
+ 		 std::ostream& os ) const;
+ 
++  void writeBlastTab( const MultiSequence& seq1, const MultiSequence& seq2,
++		 char strand, bool isTranslated, const Alphabet& alph,
++		 std::ostream& os ) const;
++
+   std::string topString( const uchar* seq, const Alphabet& alph,
+                          indexT frameSize ) const;
+ 
+diff --git a/AlignmentWrite.cc b/AlignmentWrite.cc
+index ef1b24b..cbfd603 100644
+--- a/AlignmentWrite.cc
++++ b/AlignmentWrite.cc
+@@ -8,6 +8,7 @@
+ #include <iomanip>
+ #include <algorithm>
+ #include <cassert>
++#include <cmath>
+ #include <iterator>  // ostream_iterator
+ 
+ // make C++ tolerable:
+@@ -26,7 +27,77 @@ void Alignment::write( const MultiSequence& seq1, const MultiSequence& seq2,
+ 		       int format, std::ostream& os ) const{
+   assert( !blocks.empty() );
+   if( format == 0 ) writeTab( seq1, seq2, strand, isTranslated, os );
+-  else              writeMaf( seq1, seq2, strand, isTranslated, alph, os );
++  else if ( format == 1) writeMaf( seq1, seq2, strand, isTranslated, alph, os );
++  else writeBlastTab ( seq1, seq2, strand, isTranslated, alph, os);
++}
++
++void Alignment::writeBlastTab( const MultiSequence& seq1, const MultiSequence& seq2,
++			  char strand, bool isTranslated, const Alphabet& alph,
++			  std::ostream& os ) const{
++  indexT alnBeg1 = beg1();
++  indexT alnEnd1 = end1();
++  indexT w1 = seq1.whichSequence(alnBeg1);
++  indexT seqStart1 = seq1.seqBeg(w1);
++
++  indexT size2 = seq2.finishedSize();
++  indexT frameSize2 = isTranslated ? (size2 / 3) : 0;
++  indexT alnBeg2 = aaToDna( beg2(), frameSize2 );
++  indexT alnEnd2 = aaToDna( end2(), frameSize2 );
++  indexT w2 = seq2.whichSequence( strand == '+' ? alnBeg2 : size2 - alnBeg2 );
++  indexT seqStart2 = strand == '+' ? seq2.seqBeg(w2) : size2 - seq2.seqEnd(w2);
++
++  const std::string n1 = seq1.seqName( w1 );
++  const std::string n2 = seq2.seqName( w2 );
++  const std::string m1 = topString( seq1.seqReader(), alph, frameSize2 );
++  const std::string m2 = botString( seq2.seqReader(), alph, frameSize2 );
++
++  indexT hitlen = m1.size();
++  assert (hitlen == m2.size());
++
++  indexT matches = 0;
++  indexT gaps = 0;
++  indexT mismatches = 0;
++
++  for (indexT i=0; i < hitlen; i++)
++  {
++      if (toupper(m1[i]) == toupper(m2[i])) matches++;
++      else if (m1[i] == '-' || m2[i] == '-') gaps++;
++      else mismatches++;
++  }
++
++  double pctid = matches * 100. / hitlen;
++  double nscore = score * 2;
++  double evalue = 3e9 * exp(-nscore * 0.693147181);
++
++  indexT b1 = alnBeg1 - seqStart1 + 1;  // 1-based
++  indexT b2 = alnBeg2 - seqStart2 + 1;  // 1-based
++  indexT r1 = alnEnd1 - alnBeg1;
++  indexT r2 = alnEnd2 - alnBeg2;
++  indexT s2 = seq2.seqLen(w2);
++  indexT e1, e2;
++
++  e1 = b1 + r1 - 1;
++  e2 = b2 + r2 - 1;
++
++  if (strand == '-'){
++      b2 = s2 - b2 + 1;
++      e2 = b2 - r2 + 1;
++      std::swap(b1, e1);
++      std::swap(b2, e2);
++  }
++
++  os << n2 << '\t'
++     << n1 << '\t'
++     << std::setprecision (3) << pctid << '\t'
++     << hitlen << '\t'
++     << mismatches << '\t'
++     << gaps << '\t'
++     << b2 << '\t'
++     << e2 << '\t'
++     << b1 << '\t'
++     << e1 << '\t'
++     << std::setprecision(2) << evalue << '\t'
++     << std::setprecision(4) << nscore << '\n';
+ }
+ 
+ void Alignment::writeTab( const MultiSequence& seq1, const MultiSequence& seq2,
+diff --git a/LastalArguments.cc b/LastalArguments.cc
+index 4677931..a36c861 100644
+--- a/LastalArguments.cc
++++ b/LastalArguments.cc
+@@ -75,7 +75,7 @@ Cosmetic options (default settings):\n\
+ -h: show all options and their default settings\n\
+ -v: be verbose: write messages about what lastal is doing\n\
+ -o: output file\n\
+--f: output format: 0=tabular, 1=maf ("
++-f: output format: 0=tabular, 1=maf, 2=blast-tabular ("
+     + stringify(outputFormat) + ")\n\
+ \n\
+ Miscellaneous options (default settings):\n\
+@@ -129,7 +129,7 @@ LAST home page: http://last.cbrc.jp/\n\
+       break;
+     case 'f':
+       unstringify( outputFormat, optarg );
+-      if( outputFormat < 0 || outputFormat > 1 ) badopt( c, optarg );
++      if( outputFormat < 0 || outputFormat > 2 ) badopt( c, optarg );
+       break;
+ 
+     case 'r':
+diff --git a/lastal.cc b/lastal.cc
+index 4298846..9a874ad 100644
+--- a/lastal.cc
++++ b/lastal.cc
+@@ -460,7 +460,7 @@ void alignGapped( AlignmentPot& gappedAlns, SegmentPairPot& gaplessAlns,
+     }
+ 
+     gaplessAlns.markAllOverlaps( aln.blocks );
+-    gaplessAlns.markTandemRepeats( aln.seed, args.maxRepeatDistance ); 
++    gaplessAlns.markTandemRepeats( aln.seed, args.maxRepeatDistance );
+ 
+     if( phase == Phase::final ) gappedAlns.add(aln);
+     else SegmentPairPot::markAsGood(sp);
+@@ -681,7 +681,7 @@ void writeHeader( countT refSequences, countT refLetters, std::ostream& out ){
+       out << "# score\tname1\tstart1\talnSize1\tstrand1\tseqSize1\t"
+ 	  << "name2\tstart2\talnSize2\tstrand2\tseqSize2\tblocks\n";
+     }
+-    else{  // MAF format
++    else if( args.outputFormat == 1 ){  // MAF format
+       out << "# name start alnSize strand seqSize alignment\n";
+     }
+   }
