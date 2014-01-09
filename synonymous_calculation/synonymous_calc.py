@@ -16,28 +16,28 @@ This does the following:
     1. Fetches a protein pair.
     2. Aligns the protein pair with clustalw
     3. Convert the output to Fasta format.
-    4. Use this alignment info to align gene sequences using PAL2NAL 
+    4. Use this alignment info to align gene sequences using PAL2NAL
     5. Run PAML yn00 to calculate synonymous mutation rates.
 """
 
 ########### MODIFY THE FOLLOWING PATHS ###########
-CLUSTALW_BIN = "~/bin/clustalw2"
-PAL2NAL_BIN = "~/bin/pal2nal.pl"
-PAML_BIN = "~/bin/yn00"
+CLUSTALW_BIN = "bin/clustalw2"
+PAL2NAL_BIN = "bin/pal2nal.pl"
+PAML_BIN = "bin/yn00"
 ##################################################
 
 import sys
 import os
 import os.path as op
-from subprocess import Popen 
+from subprocess import Popen
 
-from Bio import Clustalw
 from Bio import SeqIO
 from Bio import AlignIO
+from Bio.Align.Applications import ClustalwCommandline
 
 
 class AbstractCommandline:
-    
+
     def run(self):
         r = Popen(str(self), shell=True)
         return r.communicate()
@@ -53,7 +53,7 @@ class YnCommandline(AbstractCommandline):
 
     def __str__(self):
         return self.command + " %s >/dev/null" % self.ctl_file
-    
+
 
 class MrTransCommandline(AbstractCommandline):
     """Simple commandline faker.
@@ -93,7 +93,7 @@ def main(dna_file, protein_file=None, output_h=sys.stdout):
     work_dir = op.join(os.getcwd(), "syn_analysis")
     if not op.exists(work_dir):
         os.makedirs(work_dir)
-    
+
     if not protein_file:
         protein_file = translate_dna(dna_file)
 
@@ -110,9 +110,14 @@ def main(dna_file, protein_file=None, output_h=sys.stdout):
                     find_synonymous(mrtrans_fasta, work_dir)
             if ds_subs_yn is not None:
                 pair_name = "%s;%s" % (p_rec_1.name, p_rec_2.name)
-                output_h.write("%s\n" % (",".join(str(x) for x in (pair_name, 
+                output_h.write("%s\n" % (",".join(str(x) for x in (pair_name,
                         ds_subs_yn, dn_subs_yn, ds_subs_ng, dn_subs_ng))))
                 output_h.flush()
+
+    # Cleanup
+    for f in ("2YN.dN", "2YN.dS", "2YN.t", "rst", "rst1", "rub"):
+        if op.exists(f):
+            os.remove(f)
 
 
 def find_synonymous(input_file, work_dir):
@@ -122,7 +127,7 @@ def find_synonymous(input_file, work_dir):
     ctl_file = op.join(work_dir, "yn-input.ctl")
     output_file = op.join(work_dir, "nuc-subs.yn")
     ctl_h = open(ctl_file, "w")
-    ctl_h.write("seqfile = %s\noutfile = %s\nverbose = 0\n" % 
+    ctl_h.write("seqfile = %s\noutfile = %s\nverbose = 0\n" %
                 (input_file, output_file))
     ctl_h.write("icode = 0\nweighting = 0\ncommonf3x4 = 0\n")
     ctl_h.close()
@@ -134,7 +139,7 @@ def find_synonymous(input_file, work_dir):
     ds_value_ng = None
     dn_value_yn = None
     dn_value_ng = None
-    
+
     # Nei-Gojobori
     output_h = open(output_file)
     row = output_h.readline()
@@ -146,7 +151,7 @@ def find_synonymous(input_file, work_dir):
             break
         row = output_h.readline()
     output_h.close()
-    
+
     # Yang
     output_h = open(output_file)
     for line in output_h:
@@ -154,7 +159,7 @@ def find_synonymous(input_file, work_dir):
             parts = line.split(" +-")
             ds_value_yn = extract_subs_value(parts[1])
             dn_value_yn = extract_subs_value(parts[0])
-    
+
     if ds_value_yn is None or ds_value_ng is None:
         h = open(output_file)
         print >>sys.stderr, "yn00 didn't work: \n%s" % h.read()
@@ -164,24 +169,24 @@ def find_synonymous(input_file, work_dir):
 def extract_subs_value(text):
     """Extract a subsitution value from a line of text.
 
-    This is just a friendly function to grab a float value for Ks and Kn 
+    This is just a friendly function to grab a float value for Ks and Kn
     values from the junk I get from the last line of the yn00 file.
 
     Line:
-    2    1    52.7   193.3   2.0452  0.8979  0.0193 0.0573 +- 0.0177 
+    2    1    52.7   193.3   2.0452  0.8979  0.0193 0.0573 +- 0.0177
     2.9732 +- 3.2002
 
     Parts:
-        ['   2    1    52.7   193.3   2.0452  0.8979  0.0193 0.0573', 
+        ['   2    1    52.7   193.3   2.0452  0.8979  0.0193 0.0573',
          ' 0.0177  2.9732', ' 3.2002\n']
-    
+
     So we want 0.0573 for Kn and 2.9732 for Ks.
     """
     parts = text.split()
     value = float(parts[-1])
 
     return value
-    
+
 
 def run_mrtrans(align_fasta, rec_1, rec_2, work_dir):
     """Align two nucleotide sequences with mrtrans and the protein alignment.
@@ -189,14 +194,14 @@ def run_mrtrans(align_fasta, rec_1, rec_2, work_dir):
     align_file = op.join(work_dir, "prot-align.fasta")
     nuc_file = op.join(work_dir, "nuc.fasta")
     output_file = op.join(work_dir, "nuc-align.mrtrans")
-    
+
     # make the protein alignment file
     align_h = open(align_file, "w")
     align_h.write(str(align_fasta))
     align_h.close()
     # make the nucleotide file
     SeqIO.write((rec_1, rec_2), file(nuc_file, "w"), "fasta")
-        
+
     # run the program
     cl = MrTransCommandline(align_file, nuc_file, output_file)
     r, e = cl.run()
@@ -215,14 +220,15 @@ def clustal_align_protein(rec_1, rec_2, work_dir):
     align_file = op.join(work_dir, "prot.aln")
     SeqIO.write((rec_1, rec_2), file(fasta_file, "w"), "fasta")
 
-    clustal_cl = Clustalw.MultipleAlignCL(fasta_file, command=CLUSTALW_BIN)
-    clustal_cl.set_output(align_file, output_order = 'INPUT')
-    clustal_cl.set_type('PROTEIN')
-    Clustalw.do_alignment(clustal_cl)
-    aln_file = file(clustal_cl.output_file)
+    clustal_cl = ClustalwCommandline(cmd=CLUSTALW_BIN,
+                    infile=fasta_file, outfile=align_file, outorder="INPUT",
+                    type="PROTEIN")
+    stdout, stderr = clustal_cl()
+
+    aln_file = file(clustal_cl.outfile)
     alignment = AlignIO.read(aln_file, "clustal")
     print >>sys.stderr, "\tDoing clustalw alignment: %s" % clustal_cl
-    return alignment.format("fasta") 
+    return alignment.format("fasta")
 
 
 if __name__ == "__main__":
