@@ -18,4 +18,4 @@ clean:
 	rm -f *.o
 
 test: $(PROGS)
-	./${PROGS} test.fq.gz CAGT
+	./${PROGS} CAGT test.fq.gz
