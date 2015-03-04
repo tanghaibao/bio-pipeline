@@ -18,4 +18,4 @@ clean:
 	rm -f *.o
 
 test: $(PROGS)
-	./${PROGS} CAGT test.fq.gz
+	./${PROGS} "GATC|[AG](CATG)[CT]" test.fq.gz
