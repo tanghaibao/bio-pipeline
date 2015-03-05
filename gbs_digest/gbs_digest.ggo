@@ -1,0 +1,3 @@
+package "gbs_digest"
+version "1.0"
+description "Split reads using motif (e.g. CAGT). Regular expression such as \"GATC|[AG](CATG)[CT]\" is also accepted with quotes."

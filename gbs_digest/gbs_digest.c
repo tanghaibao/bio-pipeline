@@ -1,9 +1,9 @@
-#include <stdio.h>
 #include <string.h>
 #include <zlib.h>
 #include <libgen.h>
 #include <limits.h>
 #include <regex.h>
+#include "cmdline.h"
 #include "kseq.h"
 KSEQ_INIT(gzFile, gzread)
 
@@ -23,15 +23,14 @@ int main(int argc, char *argv[])
 {
     gzFile fp, fw;
     kseq_t *seq;
-    if (argc != 3) {
-        fprintf(stderr, "Usage: %s motif in.fq.gz\n\n"
-                "Split reads using motif (e.g. CAGT). Regular expression such as\n"
-                "\"GATC|[AG](CATG)[CT]\" is also accepted with quotes.\n", argv[0]);
-        return 1;
+    args_info args;
+    if (parser(argc, argv, &args) != 0 || args.inputs_num != 2) {
+        parser_print_help();
+        exit(1);
     }
 
     int l;
-    char *r = argv[1];
+    char *r = args.inputs[0];
     unsigned int a = 0, b = 0, g = 0, i = 0;
     unsigned int nreads = 0, nmotifs = 0, noutreads = 0;
 
@@ -45,7 +44,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    char *infile = argv[2];
+    char *infile = args.inputs[1];
     char outfile[PATH_MAX] = { 0 };
     make_outfile(infile, ".", r, outfile);
 
@@ -105,6 +104,7 @@ int main(int argc, char *argv[])
     regfree(&regex);
     gzclose(fp);
     gzclose(fw);
+    parser_free (&args);  // release allocated memory
 
     return 0;
 }

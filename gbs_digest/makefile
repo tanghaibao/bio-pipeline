@@ -1,5 +1,5 @@
 PROGS=gbs_digest
-SRCS=gbs_digest.c
+SRCS=gbs_digest.c cmdline.c
 OBJS=$(SRCS:.c=.o)
 CC=gcc
 LDFLAGS=-static -lz
@@ -7,11 +7,14 @@ CFLAGS=-O3 -Wall -I.
 
 all: $(PROGS)
 
+cmdline.c: gbs_digest.ggo
+	gengetopt -i $< -a args_info -f parser --unamed-opts
+
 ${PROGS}: $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 
-.o:
-	$(CC) $(CFLAGS) $< -o $@
+%.o: %.c
+	$(CC) $(CFLAGS) $< -c -o $@
 
 clean:
 	rm -f $(PROGS)
