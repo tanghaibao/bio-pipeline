@@ -7,16 +7,17 @@ CFLAGS=-O3 -Wall -I.
 
 all: $(PROGS)
 
-cmdline.c: gbs_digest.ggo
-	gengetopt -i $< -a args_info -f parser --unamed-opts
+cmdline.h cmdline.c: gbs_digest.ggo
+	gengetopt -i $< -a args_info -f parser -u
 
 ${PROGS}: $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 
-%.o: %.c
+%.o: %.c cmdline.c
 	$(CC) $(CFLAGS) $< -c -o $@
 
 clean:
+	rm -f cmdline.?
 	rm -f $(PROGS)
 	rm -f *.o
 

@@ -35,17 +35,21 @@ extern "C" {
 #endif
 
 /** @brief Where the command line options are stored */
-typedef struct args_info
+struct args_info
 {
   const char *help_help; /**< @brief Print help and exit help description.  */
   const char *version_help; /**< @brief Print version and exit help description.  */
-
+  int minlen_arg;	/**< @brief Minimum read length (default='30').  */
+  char * minlen_orig;	/**< @brief Minimum read length original value given at command line.  */
+  const char *minlen_help; /**< @brief Minimum read length help description.  */
+  
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int version_given ;	/**< @brief Whether version was given.  */
+  unsigned int minlen_given ;	/**< @brief Whether minlen was given.  */
 
   char **inputs ; /**< @brief unamed options (options without names) */
   unsigned inputs_num ; /**< @brief unamed options number */
-} args_info ;
+} ;
 
 /** @brief The additional parameters to pass to parser functions */
 struct parser_params
@@ -130,7 +134,7 @@ void parser_print_help(void);
 void parser_print_version(void);
 
 /**
- * Initializes all the fields a parser_params structure
+ * Initializes all the fields a parser_params structure 
  * to their default values
  * @param params the structure to initialize
  */

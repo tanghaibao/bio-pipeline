@@ -8,6 +8,9 @@
 KSEQ_INIT(gzFile, gzread)
 
 
+typedef struct args_info args_info;
+
+
 int make_outfile(char *s, char *sep, char *r, char *outfile)
 {
     char *d = dirname(s);
@@ -88,7 +91,7 @@ int main(int argc, char *argv[])
             a = m[i];
             b = m[i + 1];
             int slen = b - a;
-            if (slen >= 30) {
+            if (slen >= args.minlen_arg) {
                 gzprintf(fw, "@%s_%d_%d\n%.*s\n", seq->name.s, a, b, slen, seq->seq.s + a);
                 gzprintf(fw, "+\n%.*s\n", slen, seq->qual.s + a);
                 noutreads ++;

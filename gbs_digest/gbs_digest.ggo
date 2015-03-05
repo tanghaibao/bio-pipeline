@@ -1,3 +1,6 @@
 package "gbs_digest"
 version "1.0"
+usage "gbs_digest [OPTIONS] motif in.fq.gz"
 description "Split reads using motif (e.g. CAGT). Regular expression such as \"GATC|[AG](CATG)[CT]\" is also accepted with quotes."
+
+option "minlen" m "Minimum read length" int default="30" optional
