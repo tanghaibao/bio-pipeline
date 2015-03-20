@@ -65,6 +65,10 @@ int main(int argc, char *argv[]) {
     char outfile[PATH_MAX] = { 0 };
     make_outfile(infile, ".", r, outfile);
 
+    if (access(infile, F_OK) == -1) {
+        fprintf(stderr, "File `%s` not found!\n", infile);
+        return -1;
+    }
     fp = gzopen(infile, "r");
     fw = gzopen(outfile, "wb");
     seq = kseq_init(fp);
