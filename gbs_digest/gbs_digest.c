@@ -11,19 +11,33 @@ KSEQ_INIT(gzFile, gzread)
 typedef struct args_info args_info;
 
 
-int make_outfile(char *s, char *sep, char *r, char *outfile)
-{
+static int endswith(const char *str, const char *suffix) {
+    if (!str || !suffix)
+        return 0;
+    size_t lenstr = strlen(str);
+    size_t lensuffix = strlen(suffix);
+    if (lensuffix >  lenstr)
+        return 0;
+    return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+}
+
+static int make_outfile(char *s, char *sep, char *r, char *outfile) {
     char *d = dirname(s);
     char *f = basename(s);
     char *p = strstr(f, sep);
     int offset = p - f;
     sprintf(outfile, "%s/%.*s.GATC%s", d, offset, f, p);
 
+    if (endswith(outfile, ".gz") == 0) {
+        char *t = strdup(outfile);
+        sprintf(outfile, "%s.gz", t);
+        free(t);
+    }
+
     return 0;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     gzFile fp, fw;
     kseq_t *seq;
     args_info args;
@@ -73,7 +87,6 @@ int main(int argc, char *argv[])
             for (g = max_groups - 1; g >= 0; g --) {
                 if (groups[g].rm_so == (size_t) -1)
                     continue;  // no more groups
-
 #if 0
                 printf("Match %u, Group %u: [%2u-%2u]: %.*s\n",
                        i, g, groups[g].rm_so, groups[g].rm_eo,
@@ -92,8 +105,13 @@ int main(int argc, char *argv[])
             b = m[i + 1];
             int slen = b - a;
             if (slen >= args.minlen_arg) {
-                gzprintf(fw, "@%s_%d_%d\n%.*s\n", seq->name.s, a, b, slen, seq->seq.s + a);
-                gzprintf(fw, "+\n%.*s\n", slen, seq->qual.s + a);
+                if (seq->qual.s == NULL) { // FASTA format
+                    gzprintf(fw, ">%s_%d_%d\n%.*s\n", seq->name.s, a, b, slen, seq->seq.s + a);
+                }
+                else {
+                    gzprintf(fw, "@%s_%d_%d\n%.*s\n", seq->name.s, a, b, slen, seq->seq.s + a);
+                    gzprintf(fw, "+\n%.*s\n", slen, seq->qual.s + a);
+                }
                 noutreads ++;
             }
         }
