@@ -26,7 +26,7 @@ static int make_outfile(char *s, char *sep, char *r, char *outfile) {
     char *f = basename(s);
     char *p = strstr(f, sep);
     int offset = p - f;
-    sprintf(outfile, "%s/%.*s.GATC%s", d, offset, f, p);
+    sprintf(outfile, "%s/%.*s.digested%s", d, offset, f, p);
 
     if (endswith(outfile, ".gz") == 0) {
         char *t = strdup(outfile);
@@ -41,13 +41,13 @@ int main(int argc, char *argv[]) {
     gzFile fp, fw;
     kseq_t *seq;
     args_info args;
-    if (parser(argc, argv, &args) != 0 || args.inputs_num != 2) {
+    if (parser(argc, argv, &args) != 0 || args.inputs_num != 1) {
         parser_print_help();
         exit(1);
     }
 
     int l;
-    char *r = args.inputs[0];
+    char *r = args.pattern_arg;
     unsigned int a = 0, b = 0, g = 0, i = 0;
     unsigned int nreads = 0, nmotifs = 0, noutreads = 0;
 
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    char *infile = args.inputs[1];
+    char *infile = args.inputs[0];
     char outfile[PATH_MAX] = { 0 };
     make_outfile(infile, ".", r, outfile);
 

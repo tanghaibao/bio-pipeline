@@ -34,13 +34,15 @@ const char *args_info_versiontext = "";
 const char *args_info_description = "Split reads using motif (e.g. CAGT). Regular expression such as\n\"GATC|[AG](CATG)[CT]\" is also accepted with quotes.";
 
 const char *args_info_help[] = {
-  "  -h, --help        Print help and exit",
-  "  -V, --version     Print version and exit",
-  "  -m, --minlen=INT  Minimum read length  (default=`30')",
+  "  -h, --help            Print help and exit",
+  "  -V, --version         Print version and exit",
+  "  -m, --minlen=INT      Minimum read length  (default=`30')",
+  "  -p, --pattern=STRING  Restriction site pattern, default is NspI and BufCI\n                          (default=`GATC|[AG](CATG)[CT]')",
     0
 };
 
 typedef enum {ARG_NO
+  , ARG_STRING
   , ARG_INT
 } parser_arg_type;
 
@@ -63,6 +65,7 @@ void clear_given (struct args_info *args_info)
   args_info->help_given = 0 ;
   args_info->version_given = 0 ;
   args_info->minlen_given = 0 ;
+  args_info->pattern_given = 0 ;
 }
 
 static
@@ -71,6 +74,8 @@ void clear_args (struct args_info *args_info)
   FIX_UNUSED (args_info);
   args_info->minlen_arg = 30;
   args_info->minlen_orig = NULL;
+  args_info->pattern_arg = gengetopt_strdup ("GATC|[AG](CATG)[CT]");
+  args_info->pattern_orig = NULL;
   
 }
 
@@ -82,6 +87,7 @@ void init_args_info(struct args_info *args_info)
   args_info->help_help = args_info_help[0] ;
   args_info->version_help = args_info_help[1] ;
   args_info->minlen_help = args_info_help[2] ;
+  args_info->pattern_help = args_info_help[3] ;
   
 }
 
@@ -169,6 +175,8 @@ parser_release (struct args_info *args_info)
 {
   unsigned int i;
   free_string_field (&(args_info->minlen_orig));
+  free_string_field (&(args_info->pattern_arg));
+  free_string_field (&(args_info->pattern_orig));
   
   
   for (i = 0; i < args_info->inputs_num; ++i)
@@ -210,6 +218,8 @@ parser_dump(FILE *outfile, struct args_info *args_info)
     write_into_file(outfile, "version", 0, 0 );
   if (args_info->minlen_given)
     write_into_file(outfile, "minlen", args_info->minlen_orig, 0);
+  if (args_info->pattern_given)
+    write_into_file(outfile, "pattern", args_info->pattern_orig, 0);
   
 
   i = EXIT_SUCCESS;
@@ -345,6 +355,7 @@ int update_arg(void *field, char **orig_field,
   char *stop_char = 0;
   const char *val = value;
   int found;
+  char **string_field;
   FIX_UNUSED (field);
 
   stop_char = 0;
@@ -377,6 +388,14 @@ int update_arg(void *field, char **orig_field,
   switch(arg_type) {
   case ARG_INT:
     if (val) *((int *)field) = strtol (val, &stop_char, 0);
+    break;
+  case ARG_STRING:
+    if (val) {
+      string_field = (char **)field;
+      if (!no_free && *string_field)
+        free (*string_field); /* free previous string */
+      *string_field = gengetopt_strdup (val);
+    }
     break;
   default:
     break;
@@ -454,10 +473,11 @@ parser_internal (
         { "help",	0, NULL, 'h' },
         { "version",	0, NULL, 'V' },
         { "minlen",	1, NULL, 'm' },
+        { "pattern",	1, NULL, 'p' },
         { 0,  0, 0, 0 }
       };
 
-      c = getopt_long (argc, argv, "hVm:", long_options, &option_index);
+      c = getopt_long (argc, argv, "hVm:p:", long_options, &option_index);
 
       if (c == -1) break;	/* Exit from `while (1)' loop.  */
 
@@ -481,6 +501,18 @@ parser_internal (
               &(local_args_info.minlen_given), optarg, 0, "30", ARG_INT,
               check_ambiguity, override, 0, 0,
               "minlen", 'm',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'p':	/* Restriction site pattern, default is NspI and BufCI.  */
+        
+        
+          if (update_arg( (void *)&(args_info->pattern_arg), 
+               &(args_info->pattern_orig), &(args_info->pattern_given),
+              &(local_args_info.pattern_given), optarg, 0, "GATC|[AG](CATG)[CT]", ARG_STRING,
+              check_ambiguity, override, 0, 0,
+              "pattern", 'p',
               additional_error))
             goto failure;
         

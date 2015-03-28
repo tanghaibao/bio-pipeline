@@ -22,4 +22,4 @@ clean:
 	rm -f *.o
 
 test: $(PROGS)
-	./${PROGS} "GATC|[AG](CATG)[CT]" test.fq.gz
+	./${PROGS} test.fq.gz
