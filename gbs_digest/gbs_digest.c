@@ -34,9 +34,12 @@ static int make_outfile(char *s, char *sep, char *r, char *outfile, char *outdir
         mkdir(d, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     }
 
+    int gzfile = 0;
     // Clip gz suffix
-    if ((p = strstr(f, ".gz")) != NULL)
+    if ((p = strstr(f, ".gz")) != NULL) {
         *p = '\0';
+        gzfile = 1;
+    }
 
     // Clip suffix of the filename
     p = f + strlen(f);
@@ -48,14 +51,13 @@ static int make_outfile(char *s, char *sep, char *r, char *outfile, char *outdir
         p --;
     }
 
-    sprintf(outfile, "%s/%s.digested.fq.gz", d, f);
+    sprintf(outfile, "%s/%s.digested.fq", d, f);
 
-    if (endswith(outfile, ".gz") == 0) {
+    if (gzfile) {
         char *t = strdup(outfile);
         sprintf(outfile, "%s.gz", t);
         free(t);
     }
-
     return 0;
 }
 
