@@ -51,13 +51,7 @@ static int make_outfile(char *s, char *sep, char *r, char *outfile, char *outdir
         p --;
     }
 
-    sprintf(outfile, "%s/%s.digested.fq", d, f);
-
-    if (gzfile) {
-        char *t = strdup(outfile);
-        sprintf(outfile, "%s.gz", t);
-        free(t);
-    }
+    sprintf(outfile, "%s/%s.digested.fq.gz", d, f);
     return 0;
 }
 
