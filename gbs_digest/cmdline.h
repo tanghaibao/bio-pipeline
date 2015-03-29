@@ -45,11 +45,15 @@ struct args_info
   char * pattern_arg;	/**< @brief Restriction site pattern, default is NspI and BufCI (default='GATC|[AG](CATG)[CT]').  */
   char * pattern_orig;	/**< @brief Restriction site pattern, default is NspI and BufCI original value given at command line.  */
   const char *pattern_help; /**< @brief Restriction site pattern, default is NspI and BufCI help description.  */
+  char * outdir_arg;	/**< @brief Output directory.  */
+  char * outdir_orig;	/**< @brief Output directory original value given at command line.  */
+  const char *outdir_help; /**< @brief Output directory help description.  */
   
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int version_given ;	/**< @brief Whether version was given.  */
   unsigned int minlen_given ;	/**< @brief Whether minlen was given.  */
   unsigned int pattern_given ;	/**< @brief Whether pattern was given.  */
+  unsigned int outdir_given ;	/**< @brief Whether outdir was given.  */
 
   char **inputs ; /**< @brief unamed options (options without names) */
   unsigned inputs_num ; /**< @brief unamed options number */

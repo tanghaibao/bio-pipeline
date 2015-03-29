@@ -38,6 +38,7 @@ const char *args_info_help[] = {
   "  -V, --version         Print version and exit",
   "  -m, --minlen=INT      Minimum read length  (default=`30')",
   "  -p, --pattern=STRING  Restriction site pattern, default is NspI and BufCI\n                          (default=`GATC|[AG](CATG)[CT]')",
+  "  -O, --outdir=STRING   Output directory",
     0
 };
 
@@ -66,6 +67,7 @@ void clear_given (struct args_info *args_info)
   args_info->version_given = 0 ;
   args_info->minlen_given = 0 ;
   args_info->pattern_given = 0 ;
+  args_info->outdir_given = 0 ;
 }
 
 static
@@ -76,6 +78,8 @@ void clear_args (struct args_info *args_info)
   args_info->minlen_orig = NULL;
   args_info->pattern_arg = gengetopt_strdup ("GATC|[AG](CATG)[CT]");
   args_info->pattern_orig = NULL;
+  args_info->outdir_arg = NULL;
+  args_info->outdir_orig = NULL;
   
 }
 
@@ -88,6 +92,7 @@ void init_args_info(struct args_info *args_info)
   args_info->version_help = args_info_help[1] ;
   args_info->minlen_help = args_info_help[2] ;
   args_info->pattern_help = args_info_help[3] ;
+  args_info->outdir_help = args_info_help[4] ;
   
 }
 
@@ -177,6 +182,8 @@ parser_release (struct args_info *args_info)
   free_string_field (&(args_info->minlen_orig));
   free_string_field (&(args_info->pattern_arg));
   free_string_field (&(args_info->pattern_orig));
+  free_string_field (&(args_info->outdir_arg));
+  free_string_field (&(args_info->outdir_orig));
   
   
   for (i = 0; i < args_info->inputs_num; ++i)
@@ -220,6 +227,8 @@ parser_dump(FILE *outfile, struct args_info *args_info)
     write_into_file(outfile, "minlen", args_info->minlen_orig, 0);
   if (args_info->pattern_given)
     write_into_file(outfile, "pattern", args_info->pattern_orig, 0);
+  if (args_info->outdir_given)
+    write_into_file(outfile, "outdir", args_info->outdir_orig, 0);
   
 
   i = EXIT_SUCCESS;
@@ -474,10 +483,11 @@ parser_internal (
         { "version",	0, NULL, 'V' },
         { "minlen",	1, NULL, 'm' },
         { "pattern",	1, NULL, 'p' },
+        { "outdir",	1, NULL, 'O' },
         { 0,  0, 0, 0 }
       };
 
-      c = getopt_long (argc, argv, "hVm:p:", long_options, &option_index);
+      c = getopt_long (argc, argv, "hVm:p:O:", long_options, &option_index);
 
       if (c == -1) break;	/* Exit from `while (1)' loop.  */
 
@@ -513,6 +523,18 @@ parser_internal (
               &(local_args_info.pattern_given), optarg, 0, "GATC|[AG](CATG)[CT]", ARG_STRING,
               check_ambiguity, override, 0, 0,
               "pattern", 'p',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'O':	/* Output directory.  */
+        
+        
+          if (update_arg( (void *)&(args_info->outdir_arg), 
+               &(args_info->outdir_orig), &(args_info->outdir_given),
+              &(local_args_info.outdir_given), optarg, 0, 0, ARG_STRING,
+              check_ambiguity, override, 0, 0,
+              "outdir", 'O',
               additional_error))
             goto failure;
         

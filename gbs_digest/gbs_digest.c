@@ -3,6 +3,8 @@
 #include <libgen.h>
 #include <limits.h>
 #include <regex.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "cmdline.h"
 #include "kseq.h"
 KSEQ_INIT(gzFile, gzread)
@@ -21,12 +23,32 @@ static int endswith(const char *str, const char *suffix) {
     return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
 }
 
-static int make_outfile(char *s, char *sep, char *r, char *outfile) {
-    char *d = dirname(s);
-    char *f = basename(s);
-    char *p = strstr(f, sep);
-    int offset = p - f;
-    sprintf(outfile, "%s/%.*s.digested%s", d, offset, f, p);
+static int make_outfile(char *s, char *sep, char *r, char *outfile, char *outdir) {
+    char *p;
+    char *dc = strdup(s);
+    char *fc = strdup(s);
+    char *d = dirname(dc);
+    char *f = basename(fc);
+    if (outdir != NULL) {
+        d = outdir;
+        mkdir(d, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    }
+
+    // Clip gz suffix
+    if ((p = strstr(f, ".gz")) != NULL)
+        *p = '\0';
+
+    // Clip suffix of the filename
+    p = f + strlen(f);
+    while (p >= f) {
+        if (*p == '.') {
+            *p = '\0';
+            break;
+        }
+        p --;
+    }
+
+    sprintf(outfile, "%s/%s.digested.fq.gz", d, f);
 
     if (endswith(outfile, ".gz") == 0) {
         char *t = strdup(outfile);
@@ -62,8 +84,9 @@ int main(int argc, char *argv[]) {
     }
 
     char *infile = args.inputs[0];
+    char *outdir = args.outdir_arg;
     char outfile[PATH_MAX] = { 0 };
-    make_outfile(infile, ".", r, outfile);
+    make_outfile(infile, ".", r, outfile, outdir);
 
     if (access(infile, F_OK) == -1) {
         fprintf(stderr, "File `%s` not found!\n", infile);
@@ -91,11 +114,7 @@ int main(int argc, char *argv[]) {
             for (g = max_groups - 1; g >= 0; g --) {
                 if (groups[g].rm_so == (size_t) -1)
                     continue;  // no more groups
-#if 0
-                printf("Match %u, Group %u: [%2u-%2u]: %.*s\n",
-                       i, g, groups[g].rm_so, groups[g].rm_eo,
-                       groups[g].rm_eo - groups[g].rm_so, cursor + groups[g].rm_so);
-#endif
+
                 m[c ++] = groups[g].rm_so + cursor - seq->seq.s;
                 nmotifs ++;
                 break;  // stop when the group is matched
