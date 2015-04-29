@@ -42,7 +42,7 @@ struct args_info
   int minlen_arg;	/**< @brief Minimum read length (default='30').  */
   char * minlen_orig;	/**< @brief Minimum read length original value given at command line.  */
   const char *minlen_help; /**< @brief Minimum read length help description.  */
-  char * pattern_arg;	/**< @brief Restriction site pattern, default is NspI and BufCI (default='GATC|[AG](CATG)[CT]').  */
+  char * pattern_arg;	/**< @brief Restriction site pattern, default is NspI and BufCI (default='GATC|[AG]CATG([CT])').  */
   char * pattern_orig;	/**< @brief Restriction site pattern, default is NspI and BufCI original value given at command line.  */
   const char *pattern_help; /**< @brief Restriction site pattern, default is NspI and BufCI help description.  */
   char * outdir_arg;	/**< @brief Output directory.  */

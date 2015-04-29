@@ -27,7 +27,7 @@
 
 const char *args_info_purpose = "";
 
-const char *args_info_usage = "Usage: gbs_digest [OPTIONS] motif in.fq.gz";
+const char *args_info_usage = "Usage: gbs_digest [OPTIONS] in.fq.gz";
 
 const char *args_info_versiontext = "";
 
@@ -37,7 +37,7 @@ const char *args_info_help[] = {
   "  -h, --help            Print help and exit",
   "  -V, --version         Print version and exit",
   "  -m, --minlen=INT      Minimum read length  (default=`30')",
-  "  -p, --pattern=STRING  Restriction site pattern, default is NspI and BufCI\n                          (default=`GATC|[AG](CATG)[CT]')",
+  "  -p, --pattern=STRING  Restriction site pattern, default is NspI and BufCI\n                          (default=`GATC|[AG]CATG([CT])')",
   "  -O, --outdir=STRING   Output directory",
     0
 };
@@ -76,7 +76,7 @@ void clear_args (struct args_info *args_info)
   FIX_UNUSED (args_info);
   args_info->minlen_arg = 30;
   args_info->minlen_orig = NULL;
-  args_info->pattern_arg = gengetopt_strdup ("GATC|[AG](CATG)[CT]");
+  args_info->pattern_arg = gengetopt_strdup ("GATC|[AG]CATG([CT])");
   args_info->pattern_orig = NULL;
   args_info->outdir_arg = NULL;
   args_info->outdir_orig = NULL;
@@ -520,7 +520,7 @@ parser_internal (
         
           if (update_arg( (void *)&(args_info->pattern_arg), 
                &(args_info->pattern_orig), &(args_info->pattern_given),
-              &(local_args_info.pattern_given), optarg, 0, "GATC|[AG](CATG)[CT]", ARG_STRING,
+              &(local_args_info.pattern_given), optarg, 0, "GATC|[AG]CATG([CT])", ARG_STRING,
               check_ambiguity, override, 0, 0,
               "pattern", 'p',
               additional_error))

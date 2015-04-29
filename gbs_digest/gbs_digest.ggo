@@ -1,8 +1,8 @@
 package "gbs_digest"
 version "0.5.3"
-usage "gbs_digest [OPTIONS] motif in.fq.gz"
+usage "gbs_digest [OPTIONS] in.fq.gz"
 description "Split reads using motif (e.g. CAGT). Regular expression such as \"GATC|[AG](CATG)[CT]\" is also accepted with quotes."
 
 option "minlen" m "Minimum read length" int default="30" optional
-option "pattern" p "Restriction site pattern, default is NspI and BufCI" string default="GATC|[AG](CATG)[CT]" optional
+option "pattern" p "Restriction site pattern, default is NspI and BufCI" string default="GATC|[AG]CATG([CT])" optional
 option "outdir" O "Output directory" string optional
