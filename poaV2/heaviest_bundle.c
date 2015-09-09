@@ -11,7 +11,7 @@
 /** finds the heaviest traversal of the LPO seq[], using dynamic programming;
   at each node the heaviest link is chosen to buildup traversals; finally,
   the traversal with the heaviest overall link weight is returned as an
-  array of position indices.  The length of the array is stored in 
+  array of position indices.  The length of the array is stored in
   *p_best_len*/
 LPOLetterRef_T *heaviest_bundle(int len,LPOLetter_T seq[],
 				int nsource_seq,LPOSourceInfo_T source_seq[],
@@ -47,7 +47,7 @@ LPOLetterRef_T *heaviest_bundle(int len,LPOLetter_T seq[],
 	if (contains_pos[source->iseq]==source->ipos) /* YES, ADJACENT! */
 	  my_overlap += source_seq[source->iseq].weight;
       while (source=source->more); /* KEEP COUNTING TILL NO more */
-      
+
       if (my_overlap>right_overlap /* FIND BEST RIGHT MOVE: BEST OVERLAP */
 	  || (my_overlap==right_overlap && score[right->ipos]>right_score)) {
 	right_overlap=my_overlap;
@@ -86,7 +86,7 @@ int assign_sequence_bundle_id(int path_length,LPOLetterRef_T path[],
 {
   int i,*bundle_count=NULL,nseq_in_bundle=0;
   LPOLetterSource_T *source;
-  
+
   CALLOC(bundle_count,seq->nsource_seq,int);
   LOOP (i,path_length) /* COUNT #POSITIONS OF EACH SEQ ARE IN path */
     for (source= &seq->letter[path[i]].source;source;source=source->more)
@@ -138,7 +138,7 @@ void assign_hb_weights(int nsource_seq,LPOSourceInfo_T source_seq[])
 /** generates the complete set of heaviest_bundle traversals of the the LPO
  seq, using iterative heaviest_bundle() and requiring that at least
  minimum_fraction of the positions in a sequence match the heaviest
- bundle path, for that sequence to be assigned to that bundle 
+ bundle path, for that sequence to be assigned to that bundle
 ---------------------------------------------------------------
 ------------------------------------------------------------*/
 void generate_lpo_bundles(LPOSequence_T *seq,float minimum_fraction)
@@ -165,7 +165,7 @@ void generate_lpo_bundles(LPOSequence_T *seq,float minimum_fraction)
 
     if (count<1) {
     premature_warning:
-      fprintf(stderr,"*** WARNING: bundling ended prematurely after %d bundles.\nNo sequences fit inside this last bundle.\nA total of %d sequences incuding consensus were bundled.\n\n",ibundle,nbundled);
+      /* fprintf(stderr,"*** WARNING: bundling ended prematurely after %d bundles.\nNo sequences fit inside this last bundle.\nA total of %d sequences incuding consensus were bundled.\n\n",ibundle,nbundled); */
       break;
     }
   }
