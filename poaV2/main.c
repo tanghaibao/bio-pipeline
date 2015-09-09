@@ -11,6 +11,7 @@ int main(int argc,char *argv[])
 {
   int i,j,ibundle=ALL_BUNDLES,nframe_seq=0,use_reverse_complement=0;
   int nseq=0,do_switch_case=dont_switch_case,do_analyze_bundles=0;
+  int is_silent = 0;
   int nseq_in_list=0,n_input_seqs=0,max_input_seqs=0;
   char score_file[256],seq_file[256],po_list_entry_filename[256],*comment=NULL,*al_name="test align";
   ResidueScoreMatrix_T score_matrix; /* DEFAULT GAP PENALTIES*/
@@ -40,7 +41,7 @@ int main(int argc,char *argv[])
 "INPUT:\n"
 "  -read_fasta FILE       Read in FASTA sequence file.\n"
 "  -read_msa FILE         Read in MSA alignment file.\n"
-"  -read_msa2 FILE        Read in second MSA file. \n" 
+"  -read_msa2 FILE        Read in second MSA file. \n"
 "  -subset FILE           Filter MSA to include list of seqs in file.\n"
 "  -subset2 FILE          Filter second MSA to include list of seqs in file.\n"
 "  -remove FILE           Filter MSA to exclude list of seqs in file.\n"
@@ -70,8 +71,9 @@ int main(int argc,char *argv[])
 "  -preserve_seqorder     Write out MSA with sequences in their input order.\n"
 "  -printmatrix LETTERS   Print score matrix to stdout.\n"
 "  -best                  Restrict MSA output to heaviest bundles (PIR only).\n"
-"  -v                     Run in verbose mode (e.g. output gap penalties).\n\n"
-"  NOTE:  One of the -read_fasta, -read_msa, or -read_msa_list arguments\n" 
+"  -v                     Run in verbose mode (e.g. output gap penalties).\n"
+"  -silent                Silent mode (no debug info)\n\n"
+"  NOTE:  One of the -read_fasta, -read_msa, or -read_msa_list arguments\n"
 "         must be used, since a sequence or alignment file is required.\n\n"
 "For more information, see http://www.bioinformatics.ucla.edu/poa.\n\n"
 	    ,argv[0],argv[0]);
@@ -82,11 +84,12 @@ int main(int argc,char *argv[])
     ARGMATCH_VAL("-tolower",do_switch_case,switch_case_to_lower);
     ARGMATCH_VAL("-toupper",do_switch_case,switch_case_to_upper);
     ARGMATCH_VAL("-v",logfile,stdout);
+    ARGMATCH_VAL("-silent", is_silent, 1); /* SILENT MODE*/
     ARGMATCH_VAL("-best",ibundle,0); /*RESTRICT FASTA OUTPUT TO HB */
     ARGMATCH_VAL("-hb",do_analyze_bundles,1);/*CALCULATE HEAVIEST BUNDLING*/
     ARGGET("-printmatrix",print_matrix_letters);
     ARGGET("-read_msa",po_filename); /* READ A MSA FILE FOR ALIGNMENT/ANALYSIS*/
-    ARGGET("-read_msa2",po2_filename); /* READ A SECOND MSA FILE FOR ALIGNMENT/ANALYSIS*/  
+    ARGGET("-read_msa2",po2_filename); /* READ A SECOND MSA FILE FOR ALIGNMENT/ANALYSIS*/
     ARGGET("-read_msa_list",po_list_filename); /* READ A LIST OF MSAs FOR ALIGNMENT/ANALYSIS */
     ARGGET("-pir",fasta_out); /* SAVE FASTA-PIR FORMAT ALIGNMENT FILE */
     ARGGET("-clustal",clustal_out); /* SAVE CLUSTAL FORMAT ALIGNMENT FILE */
@@ -102,30 +105,30 @@ int main(int argc,char *argv[])
     ARGGET("-remove",rm_subset_file); /* FILENAME TO READ SEQ REMOVAL LIST*/
     ARGGET("-remove2",rm_subset2_file); /* FILENAME TO READ SEQ REMOVAL LIST*/
     ARGGET("-read_fasta",seq_filename); /* READ FASTA FILE FOR ALIGNMENT */
-    NEXTARG(matrix_filename); /* NON-FLAG ARG SHOULD BE MATRIX FILE */   
+    NEXTARG(matrix_filename); /* NON-FLAG ARG SHOULD BE MATRIX FILE */
   }
 
-  
+
   /** CHECK FOR CONFLICTING FLAGS **/
-  
+
   if (po_list_filename && (po_filename || po2_filename)) {
     WARN_MSG(USERR,(ERRTXT, "Error: The -read_po_list and -read_po flags cannot be used at the same time.\nExiting."), "$Revision: 1.2.2.9 $");
     exit_code = 1;
     goto free_memory_and_exit;
   }
-  
+
   if (((subset_file || rm_subset_file) && !po_filename) || ((subset2_file || rm_subset2_file) && !po2_filename)) {
     WARN_MSG(USERR,(ERRTXT, "Error: Each -subset/-remove flag must have a corresponding -read_po flag.\nExiting."),"$Revision: 1.2.2.9 $");
     exit_code = 1;
     goto free_memory_and_exit;
   }
-  
+
   if ((subset_file && rm_subset_file) || (subset2_file && rm_subset2_file)) {
     WARN_MSG(USERR,(ERRTXT, "Error: The -subset and -remove flags cannot be used at the same time.\nExiting."),"$Revision: 1.2.2.9 $");
     exit_code = 1;
     goto free_memory_and_exit;
   }
-  
+
   if (rm_subset_file) {
     subset_file = rm_subset_file;
     remove_listed_seqs = 1;
@@ -134,9 +137,9 @@ int main(int argc,char *argv[])
     subset2_file = rm_subset2_file;
     remove_listed_seqs2 = 1;
   }
-  
+
   if (hbmin)
-    bundling_threshold=atof(hbmin);  
+    bundling_threshold=atof(hbmin);
 
   if (!matrix_filename ||
       read_score_matrix(matrix_filename,&score_matrix)<=0){/* READ MATRIX */
@@ -145,7 +148,7 @@ int main(int argc,char *argv[])
     exit_code=1; /* SIGNAL ERROR CONDITION */
     goto free_memory_and_exit;
   }
-  
+
   if (logfile) {
     fprintf(logfile,"X-Gap Penalties (Open, Aff1, Aff2; LTrunc, LDecay): %d %d %d %d %d\n",
 	    score_matrix.gap_penalty_set[0][0],
@@ -170,40 +173,42 @@ int main(int argc,char *argv[])
     }
     fprintf(logfile,"... \n");
   }
-  
+
   if (print_matrix_letters) /* USER WANTS US TO PRINT A MATRIX */
     print_score_matrix(stdout,&score_matrix,print_matrix_letters
 		       /*"ARNDCQEGHILKMFPSTWYV"*/);
-  
-  
+
+
   /** READ INPUT FILES **/
-  
+
   n_input_seqs = 0;
   max_input_seqs = 10;
   CALLOC (input_seqs, max_input_seqs, LPOSequence_T *);
-  
+
   if (po_filename) {
     lpo_in = read_partial_order_file (po_filename, subset_file, remove_listed_seqs, keep_all_links, do_switch_case, &score_matrix);
     if (lpo_in == NULL) {
       exit_code = 1;
       goto free_memory_and_exit;
     }
-    fprintf(errfile,"...Read %d sequences from MSA file %s...\n",lpo_in->nsource_seq,po_filename);
+    if (!is_silent)
+        fprintf(errfile,"...Read %d sequences from MSA file %s...\n",lpo_in->nsource_seq,po_filename);
     input_seqs[n_input_seqs++] = lpo_in;
     lpo_in = NULL;
   }
-  
+
   if (po2_filename) {
     lpo_in = read_partial_order_file (po2_filename, subset2_file, remove_listed_seqs2, keep_all_links, do_switch_case, &score_matrix);
     if (lpo_in == NULL) {
       exit_code = 1;
       goto free_memory_and_exit;
     }
-    fprintf(errfile,"...Read %d sequences from second MSA file %s...\n",lpo_in->nsource_seq,po2_filename);
+    if (!is_silent)
+        fprintf(errfile,"...Read %d sequences from second MSA file %s...\n",lpo_in->nsource_seq,po2_filename);
     input_seqs[n_input_seqs++] = lpo_in;
     lpo_in = NULL;
   }
-  
+
   if (po_list_filename) {
     po_list_file = fopen (po_list_filename, "r");
     while (po_list_file && fscanf (po_list_file, " %s", po_list_entry_filename) == 1) {
@@ -212,7 +217,8 @@ int main(int argc,char *argv[])
 	exit_code = 1;
 	goto free_memory_and_exit;
       }
-      fprintf(errfile,"...Read %d sequences from PO list entry %s...\n",lpo_in->nsource_seq,po_list_entry_filename);
+    if (!is_silent)
+        fprintf(errfile,"...Read %d sequences from PO list entry %s...\n",lpo_in->nsource_seq,po_list_entry_filename);
       nseq_in_list += lpo_in->nsource_seq;
       input_seqs[n_input_seqs++] = lpo_in;
       lpo_in = NULL;
@@ -225,12 +231,13 @@ int main(int argc,char *argv[])
       WARN_MSG(USERR,(ERRTXT,"Error reading PO list file %s.\nExiting",
 		      po_list_file),"$Revision: 1.2.2.9 $");
       exit_code=1; /* SIGNAL ERROR CONDITION */
-      goto free_memory_and_exit;      
+      goto free_memory_and_exit;
     }
   }
-  
+
   if (seq_filename) {
-    seq_ifile = fopen (seq_filename, "r");
+    seq_ifile = (strcmp(seq_filename, "-") == 0 || strcmp(seq_filename, "stdin") == 0) \
+            ? stdin: fopen (seq_filename, "r");
     if (seq_ifile == NULL) {
       WARN_MSG(USERR,(ERRTXT,"Couldn't open sequence file %s.\nExiting",
 		      seq_filename),"$Revision: 1.2.2.9 $");
@@ -245,7 +252,8 @@ int main(int argc,char *argv[])
       exit_code=1; /* SIGNAL ERROR CONDITION */
       goto free_memory_and_exit;
     }
-    fprintf(errfile,"...Read %d sequences from sequence file %s...\n",nseq,seq_filename);
+    if (!is_silent)
+        fprintf(errfile,"...Read %d sequences from sequence file %s...\n",nseq,seq_filename);
     for (i=0; i<nseq; i++) {
       input_seqs[n_input_seqs++] = &(seq[i]);
       initialize_seqs_as_lpo(1,&(seq[i]),&score_matrix);
@@ -269,12 +277,12 @@ int main(int argc,char *argv[])
 				       use_aggressive_fusion, do_progressive, pair_score_file,
 				       matrix_scoring_function, do_global, do_preserve_sequence_order);
   }
-  
+
   if (comment) { /* SAVE THE COMMENT LINE AS TITLE OF OUR LPO */
     FREE(lpo_out->title);
     lpo_out->title=strdup(comment);
   }
-  
+
   /* DIVIDE INTO BUNDLES W/ CONSENSUS USING PERCENT ID */
   if (do_analyze_bundles)
     generate_lpo_bundles(lpo_out,bundling_threshold);
@@ -283,50 +291,55 @@ int main(int argc,char *argv[])
     if (lpo_file_out=fopen(po_out, "w")) {
        write_lpo(lpo_file_out,lpo_out,&score_matrix);
        fclose(lpo_file_out);
+    if (!is_silent)
        fprintf(errfile,"...Wrote %d sequences to PO file %s...\n",lpo_out->nsource_seq,po_out);
     }
     else {
       WARN_MSG(USERR,(ERRTXT,"*** Could not save PO file %s.  Exiting.",
 		      po_out),"$Revision: 1.2.2.9 $");
-      exit_code=1; /* SIGNAL ERROR CONDITION */ 
+      exit_code=1; /* SIGNAL ERROR CONDITION */
     }
   }
 
   if (fasta_out) { /* WRITE FINAL ALIGNMENT IN FASTA-PIR FORMAT */
-    if (seq_ifile=fopen(fasta_out,"w")) { /* FASTA-PIR ALIGNMENT*/
+    seq_ifile = (strcmp(fasta_out, "stdout") == 0) ? stdout: fopen(fasta_out,"w");
+    if (seq_ifile) { /* FASTA-PIR ALIGNMENT*/
       write_lpo_bundle_as_fasta(seq_ifile,lpo_out,score_matrix.nsymbol,
 				score_matrix.symbol,ibundle);
       fclose(seq_ifile);
+    if (!is_silent)
       fprintf(errfile,"...Wrote %d sequences to FASTA-PIR file %s...\n",lpo_out->nsource_seq,fasta_out);
     }
     else {
       WARN_MSG(USERR,(ERRTXT,"*** Could not save FASTA-PIR file %s.  Exiting.",
 		      fasta_out),"$Revision: 1.2.2.9 $");
-      exit_code=1; /* SIGNAL ERROR CONDITION */ 
+      exit_code=1; /* SIGNAL ERROR CONDITION */
    }
   }
 
   if (clustal_out) { /* WRITE FINAL ALIGNMENT IN CLUSTAL FORMAT */
-    if (seq_ifile=fopen(clustal_out,"w")) { /* CLUSTAL ALIGNMENT*/
+    seq_ifile = (strcmp(clustal_out, "stdout") == 0) ? stdout: fopen(clustal_out,"w");
+    if (seq_ifile) { /* CLUSTAL ALIGNMENT*/
       export_clustal_seqal(seq_ifile,lpo_out,score_matrix.nsymbol,
 			   score_matrix.symbol);
       fclose(seq_ifile);
+    if (!is_silent)
       fprintf(errfile,"...Wrote %d sequences to CLUSTAL file %s...\n",lpo_out->nsource_seq,clustal_out);
     }
     else {
       WARN_MSG(USERR,(ERRTXT,"*** Could not save CLUSTAL file %s.  Exiting.",
 		      clustal_out),"$Revision: 1.2.2.9 $");
-      exit_code=1; /* SIGNAL ERROR CONDITION */ 
+      exit_code=1; /* SIGNAL ERROR CONDITION */
    }
   }
 
 
 
  free_memory_and_exit: /* FREE ALL DYNAMICALLY ALLOCATED DATA!!!! */
-  
+
   if (dna_lpo)
     free_lpo_sequence(dna_lpo,TRUE);
-  
+
   for (i=0;i<n_input_seqs;i++) {
     for (j=0;j<nseq;j++) {
       if (input_seqs[i]==&(seq[j]))
@@ -336,7 +349,7 @@ int main(int argc,char *argv[])
   }
   FREE (input_seqs);
   if (nseq>0) FREE (seq);
-  
+
   exit (exit_code);
 }
 
@@ -346,16 +359,16 @@ static LPOSequence_T *read_partial_order_file (char *po_filename, char *subset_f
 {
   LPOSequence_T *lpo_in;
   FILE *po_file=NULL, *subset_file=NULL;
-  
+
   if (!po_filename)
     return NULL;
-  
+
   po_file = fopen (po_filename, "r");
   if (!po_file) {
     WARN_MSG (USERR, (ERRTXT,"Couldn't open MSA file %s.\nExiting.",po_filename), "$Revision: 1.2.2.9 $");
     return NULL;
   }
-  
+
   if (subset_filename) {
     subset_file = fopen (subset_filename, "r");
     if (!subset_file) {
@@ -363,7 +376,7 @@ static LPOSequence_T *read_partial_order_file (char *po_filename, char *subset_f
       return NULL;
     }
   }
-  
+
   if (subset_file) {
     lpo_in = read_msa_select (po_file, UNKNOWN_MSA, subset_file, keep_all_links, remove_listed_seqs, do_switch_case, mat);
     fclose (subset_file);

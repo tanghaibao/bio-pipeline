@@ -28,9 +28,13 @@ LIBOBJECTS= \
 
 CC = gcc
 #CFLAGS= -g -ansi-strict -W -Wall -DUSE_WEIGHTED_LINKS -DUSE_PROJECT_HEADER -I.
-CFLAGS= -g -DUSE_WEIGHTED_LINKS -DUSE_PROJECT_HEADER -I.
+CFLAGS= -g -O2 -DUSE_WEIGHTED_LINKS -DUSE_PROJECT_HEADER -I.
 # -I$(HOME)/lib/include
 # -DREPORT_MAX_ALLOC
+
+# NB: LIBRARY MUST FOLLOW OBJECTS OR LINK FAILS WITH UNRESOLVED REFERENCES!!
+poa: $(OBJECTS) liblpo.a
+	$(CC) -o $@ $(OBJECTS) -lm liblpo.a
 
 clean:
 	rm -f $(OBJECTS) $(LIBOBJECTS) $(TARGETS)
@@ -41,10 +45,6 @@ liblpo.a: $(LIBOBJECTS)
 	ranlib $@
 
 
-
-# NB: LIBRARY MUST FOLLOW OBJECTS OR LINK FAILS WITH UNRESOLVED REFERENCES!!
-poa: $(OBJECTS) liblpo.a
-	$(CC) -o $@ $(OBJECTS) -lm liblpo.a
 
 what:
 	@echo poa: partial-order based sequence alignment program

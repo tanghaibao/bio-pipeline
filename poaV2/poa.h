@@ -51,7 +51,7 @@ typedef struct LPOLetterSource_S LPOLetterSource_T;
 /** linked list for connecting an LPOLetter to either right
  or left */
 struct LPOLetterLink_S {
- /** ADJACENT LETTER LINKED TO THIS LETTER */	
+ /** ADJACENT LETTER LINKED TO THIS LETTER */
   LPOLetterRef_T ipos;
 #ifdef USE_WEIGHTED_LINKS
  /** transition cost for traversing this link */
@@ -71,7 +71,7 @@ typedef struct LPOLetterLink_S LPOLetterLink_T;
 
 /** Structure for storing individual LPO Letters*/
 struct LPOLetter_S {
- /** ADJACENT LETTER(S) TO THE LEFT */	
+ /** ADJACENT LETTER(S) TO THE LEFT */
   LPOLetterLink_T left;
  /** ADJACENT LETTER(S) TO THE RIGHT */
   LPOLetterLink_T right;
@@ -93,7 +93,7 @@ typedef struct LPOLetter_S LPOLetter_T;
 
 
 /** maximum length of a sequence name */
-#define SEQUENCE_NAME_MAX 32
+#define SEQUENCE_NAME_MAX 128
 /** buffer chunk size for expanding a block of seq storage */
 #define SEQUENCE_BUFFER_CHUNK 8
 
@@ -139,7 +139,7 @@ typedef struct LPOSourceInfo_S LPOSourceInfo_T;
 #define ALL_BUNDLES (-1)
 
 
-/** holder for an LPO sequence, its letters, 
+/** holder for an LPO sequence, its letters,
   and associated information */
 struct LPOSequence_S {/** */
   int length;/** */
@@ -187,7 +187,7 @@ enum {
 
 
 
-/** DON'T ALLOCATE MORE THAN THIS TOTAL AMOUNT OF MEMORY 
+/** DON'T ALLOCATE MORE THAN THIS TOTAL AMOUNT OF MEMORY
 ---------------------------------------------------------------
 ---------------------------------------------------------------
 */
@@ -203,22 +203,22 @@ enum {
 
 /**@name The lpo library*/
 /*@{*/
-/**@memo This set of web pages documents the functionality of the lpo 
+/**@memo This set of web pages documents the functionality of the lpo
 function library.  This is a set of C functions for reading, writing,
-creating, manipulating, and aligning partial order sequences.  These 
+creating, manipulating, and aligning partial order sequences.  These
 functions divide into several groups:
-\begin{itemize} 
-\item \URL[File utilities]{General.html#read_fasta}: reading and writing 
+\begin{itemize}
+\item \URL[File utilities]{General.html#read_fasta}: reading and writing
 FASTA and po files
-\item \URL[lpo utilities]{General.html#add_lpo_link}: creating, fusing, 
+\item \URL[lpo utilities]{General.html#add_lpo_link}: creating, fusing,
 freeing, manipulating lpo data
-\item \URL[alignment]{General.html#align_lpo}: aligning one or more linear 
+\item \URL[alignment]{General.html#align_lpo}: aligning one or more linear
 sequences to an lpo
 \item analysis: analyzing lpo structure, e.g. to find consensus
 \end{itemize}
 */
 
-/**@memo Click \URL[here]{../poa} for more information about partial 
+/**@memo Click \URL[here]{../poa} for more information about partial
 order alignment.*/
 
 /*@}*/
@@ -227,21 +227,21 @@ order alignment.*/
 
 /**@name linking to the lpo library */
 /*@{*/
-/**@memo To use function from this library in your code, you must 
- do two things.  First you must 
-include <lpo.h> in your source files, to access the prototypes.  
- Second, when you compile, you must tell the compiler where the 
- lpo header and library files are located.  {\bfNB it appears gcc 
-loads libraries in reverse order of the command line arguments, so 
-you have to specify your source files BEFORE the -llpo library argument 
-on the command line, or the linker will give you unresolved reference 
+/**@memo To use function from this library in your code, you must
+ do two things.  First you must
+include <lpo.h> in your source files, to access the prototypes.
+ Second, when you compile, you must tell the compiler where the
+ lpo header and library files are located.  {\bfNB it appears gcc
+loads libraries in reverse order of the command line arguments, so
+you have to specify your source files BEFORE the -llpo library argument
+on the command line, or the linker will give you unresolved reference
 errors}.  e.g.  \begin{verbatim}
 
 gcc -o myprog myfile.c -I~leec/lib/include -L~leec/lib -llpo
 \end{verbatim}
 */
 
-/**@memo Click \URL[here]{../poa} for more information about partial 
+/**@memo Click \URL[here]{../poa} for more information about partial
 order alignment.*/
 
 /*@}*/

@@ -15,7 +15,7 @@ int read_fasta(FILE *seq_file,Sequence_T **seq,
   line[SEQ_LENGTH_MAX],seq_title[FASTA_NAME_MAX]="";
   char *p;
   stringptr tmp_seq=STRINGPTR_EMPTY_INIT;
-	
+
  /* read in sequences */
   while (fgets(line,sizeof(line)-1,seq_file)) {
     if ((p=strrchr(line,'\n'))) /* REMOVE NEWLINE FROM END OF LINE */
@@ -65,7 +65,7 @@ int read_fasta(FILE *seq_file,Sequence_T **seq,
   return nseq; /* TOTAL NUMBER OF SEQUENCES CREATED */
 }
 
-/**@memo example: reading FASTA format file: 
+/**@memo example: reading FASTA format file:
     seq_ifile=fopen(seq_filename,"r");
     if (seq_ifile) {
       nseq=read_fasta(seq_ifile,&seq,do_switch_case,&comment);
@@ -80,7 +80,7 @@ void write_fasta(FILE *ifile,char name[],char title[],char seq[])
 {
   int j;
 
-  fprintf(ifile,">%s %s\n",name,title? title : "untitled");
+  fprintf(ifile,">%s\n",name);
   for (j=0;j<strlen(seq);j+=60)
     fprintf(ifile,"%.60s\n",seq+j);
 

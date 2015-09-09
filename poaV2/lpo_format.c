@@ -27,8 +27,8 @@ void write_lpo(FILE *ifile,LPOSequence_T *seq,
 
   LOOPF (i,seq->length) {
     fprintf(ifile,"%c:",
-	    seq->letter[i].letter < score_matrix->nsymbol ? 
-	    score_matrix->symbol[seq->letter[i].letter] 
+	    seq->letter[i].letter < score_matrix->nsymbol ?
+	    score_matrix->symbol[seq->letter[i].letter]
 	    : seq->letter[i].letter);
     for (link= &seq->letter[i].left;link && link->ipos>=0;link=link->more)
       fprintf(ifile,"L%d",link->ipos);
@@ -39,8 +39,8 @@ void write_lpo(FILE *ifile,LPOSequence_T *seq,
     fputc('\n',ifile);
   }
 }
-/**@memo example: writing a PO file: 
-  if (lpo_file_out) 
+/**@memo example: writing a PO file:
+  if (lpo_file_out)
     write_lpo(lpo_file_out,lpo_out,score_matrix.symbol);
 */
 
@@ -48,7 +48,7 @@ void write_lpo(FILE *ifile,LPOSequence_T *seq,
 
 
 /** reads an LPO from the stream ifile, dynamically allocates memory for
-it, and returns a pointer to the LPO */ 
+it, and returns a pointer to the LPO */
 LPOSequence_T *read_lpo(FILE *ifile)
 {
   int i,j,length,nsource_seq,istart,field_id,*pos_count=NULL,value;
@@ -139,7 +139,7 @@ enum {
 };
 
 /** reads an LPO from the stream ifile, dynamically allocates memory for
-it, and returns a pointer to the LPO */ 
+it, and returns a pointer to the LPO */
 LPOSequence_T *read_lpo_select(FILE *ifile,FILE *select_file,
 			       int keep_all_links,int remove_listed_sequences)
 {
@@ -220,7 +220,7 @@ LPOSequence_T *read_lpo_select(FILE *ifile,FILE *select_file,
     }
     else { /* EXCLUDE THIS SEQUENCE FROM THE FILTERED LPO */
       iseq_compact[i]= INVALID_LETTER_POSITION;
-      if (seq->source_seq[i].title) 
+      if (seq->source_seq[i].title)
 	free(seq->source_seq[i].title);
     }
   }
@@ -291,7 +291,7 @@ LPOSequence_T *read_lpo_select(FILE *ifile,FILE *select_file,
 
       pos_compact[i]=npos_compact++;
     }
-    else 
+    else
       pos_compact[i]= INVALID_LETTER_POSITION;
   }
   seq->length=npos_compact;
@@ -333,7 +333,7 @@ LPOSequence_T *read_lpo(FILE *ifile)
 
 
 
-#define FASTA_GAP_CHARACTER '.'
+#define FASTA_GAP_CHARACTER '-'
 int xlate_lpo_to_al(LPOSequence_T *seq,
 		    int nsymbol,char symbol[],int ibundle,
 		    char gap_character,
@@ -349,7 +349,7 @@ int xlate_lpo_to_al(LPOSequence_T *seq,
       nring++;
     }
   nring++; /* DON'T FORGET TO COUNT THE LAST RING!!! */
-  
+
   CALLOC(seq_pos,seq->nsource_seq,char *); /* ALLOCATE MAP ARRAY*/
   CALLOC(p,seq->nsource_seq*nring,char);
   LOOP (i,seq->nsource_seq) /* BUILD POINTER ARRAY INTO MAP ARRAY */
@@ -388,7 +388,7 @@ int xlate_lpo_to_al(LPOSequence_T *seq,
 }
 
 
-/** writes the LPO in FASTA format, including all sequences in the 
+/** writes the LPO in FASTA format, including all sequences in the
   specified bundle */
 void write_lpo_bundle_as_fasta(FILE *ifile,LPOSequence_T *seq,
 			       int nsymbol,char symbol[],int ibundle)
@@ -402,7 +402,7 @@ void write_lpo_bundle_as_fasta(FILE *ifile,LPOSequence_T *seq,
   LOOPF (i,seq->nsource_seq) { /* NOW WRITE OUT FASTA FORMAT */
     if (ibundle<0 /* PRINT ALL BUNDLES */
 	|| seq->source_seq[i].bundle_id == ibundle) { /* OR JUST THIS BUNDLE*/
-      fprintf(ifile,">%s %s",seq->source_seq[i].name,seq->source_seq[i].title);
+      fprintf(ifile,">%s",seq->source_seq[i].name);
       iprint=0;
       LOOPF (j,nring) { /* WRITE OUT 60 CHARACTER SEQUENCE LINES */
 	if (NULL==include_in_save || include_in_save[j]) {
@@ -418,7 +418,7 @@ void write_lpo_bundle_as_fasta(FILE *ifile,LPOSequence_T *seq,
   FREE(include_in_save);
   FREE(seq_pos);
 }
-/**@memo example: writing FASTA format file: 
+/**@memo example: writing FASTA format file:
     if (seq_ifile=fopen(fasta_out,"w")) {
       write_lpo_bundle_as_fasta(seq_ifile,lpo_out,
       score_matrix.nsymbol,score_matrix.symbol,ibundle);
@@ -427,7 +427,7 @@ void write_lpo_bundle_as_fasta(FILE *ifile,LPOSequence_T *seq,
 */
 
 
-/** writes the LPO in FASTA format, including all sequences in all bundles 
+/** writes the LPO in FASTA format, including all sequences in all bundles
 -------------------------------------------------------
 ---------------------------------------------------------------------------
 */
@@ -446,7 +446,7 @@ void write_lpo_as_fasta(FILE *ifile,LPOSequence_T *seq,
   *
   *     This function writes out sequences.  Each line of sequnces
   *     will be written out in blocks with spacing in between
-  *     each block.  
+  *     each block.
   *
   ***************************************************************/
 
