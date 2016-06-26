@@ -10,6 +10,9 @@ extensions = [
               ["src/kseq.pyx"],
               include_dirs=['src'],
               libraries=["z"]),
+    Extension("klib.kopen",
+              ["src/kopen.pyx"],
+              include_dirs=['src']),
 ]
 
 extensions = cythonize(extensions, include_path=['src'])
