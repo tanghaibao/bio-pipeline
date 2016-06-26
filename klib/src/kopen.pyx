@@ -1,7 +1,7 @@
 import sys
 
 
-cdef int BUF_SIZE = 0x10000
+DEF BUF_SIZE = 0x10000
 
 
 cdef class Kopen:
@@ -12,14 +12,14 @@ cdef class Kopen:
         cdef int fd
         self.x = kopen(filename, &fd)
         fp = fdopen(fd, "r")
-        if <long>fp == 0:
+        if fp == NULL:
             print >> sys.stderr, "ERROR: fail to open the input"
             sys.exit(1)
         self.fp = fp
 
     def read(self):
         cdef int l
-        cdef unsigned char buf[0x10000]
+        cdef unsigned char buf[BUF_SIZE]
         while True:
             l = fread(buf, 1, BUF_SIZE, self.fp)
             if l != 0:
