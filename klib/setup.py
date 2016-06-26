@@ -30,12 +30,15 @@ metadata = dict(
         "Programming Language :: Python :: 2.7",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
+    url="https://github.com/tanghaibao/bio-pipeline/tree/master/klib",
     author=("Haibao Tang"),
     author_email="tanghaibao@gmail.com",
     ext_modules=extensions,
     license="BSD",
+    packages=["klib"],
+    package_dir={"klib": "src"},
+    requires=['cython (>=0.21)'],
 )
-
 
 if __name__ == '__main__':
     setup(**metadata)

@@ -30,8 +30,6 @@ cdef extern from "kseq.h":
     int kseq_read(kseq_t *seq)
 
 
-ctypedef kseq_t *kseq_t_pointer
-
 cdef class Kseq:
     cdef gzFile *_c_file
     cdef int l
