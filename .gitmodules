@@ -1,3 +1,6 @@
 [submodule "klib/src/klib"]
 	path = klib/src/klib
 	url = https://github.com/attractivechaos/klib.git
+[submodule "phasing/seqan"]
+	path = phasing/seqan
+	url = https://github.com/seqan/seqan
