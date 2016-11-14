@@ -3,9 +3,9 @@ CXXFLAGS+=-Iseqan/include -std=c++14 -DNDEBUG -O3 -W -Wall -pedantic -fopenmp
 LDFLAGS+=-lpthread -lrt
 
 default: all
-all: main
+all: phasing
 
-main: main.o
+phasing: main.o
 	$(CXX) $(LDFLAGS) -o $@ $^
 
 main.o: main.cc
