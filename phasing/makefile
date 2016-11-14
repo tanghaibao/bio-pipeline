@@ -1,5 +1,5 @@
 CXX=g++-6
-CXXFLAGS+=-Iseqan/include -std=c++14 -DNDEBUG -O3 -W -Wall -pedantic -fopenmp
+CXXFLAGS+=-Iseqan/include -std=c++14 -DNDEBUG -W -Wall -pedantic -fopenmp
 LDFLAGS+=-lpthread -lrt
 
 default: all

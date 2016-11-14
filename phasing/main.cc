@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 #include <seqan/basic.h>
 #include <seqan/sequence.h>
@@ -10,6 +11,18 @@
 using namespace seqan;
 using namespace std;
 
+
+struct CPRA
+{
+    CharString seq;
+    int32_t pos;
+    CharString ref;
+    CharString alt;
+
+    CPRA(VcfRecord &r)
+    {
+    }
+};
 
 struct PhasingOptions
 {
@@ -47,6 +60,37 @@ parseCommandLine(PhasingOptions &opts, int argc, char const **argv)
 }
 
 
+int parse_vcf_file(vector<CPRA> variants, CharString &vcf_file)
+{
+    VcfFileIn vcfIn(toCString(vcf_file));
+    // Attach to standard output.
+    VcfFileOut vcfOut(vcfIn);
+    open(vcfOut, cout, Vcf());
+
+    // Copy over header
+    VcfHeader header;
+    readHeader(header, vcfIn);
+    auto contigs = contigNamesCache(context(vcfIn));
+    // for (auto &i : contigs) { cout << i << endl; }
+    cout << "length(contigs)=" << length(contigs) << endl;
+
+    VcfRecord record;
+    CharString rName = "chr12";
+    int rID = 0;
+    while (!atEnd(vcfIn))
+    {
+        getIdByName(rID, contigs, rName);
+        readRecord(record, vcfIn);
+        if ((length(record.ref) > 1) || (length(record.alt) > 1))
+            continue;
+        cout << rID << "\t" << record.beginPos << "\t"
+             << record.ref << "\t" << record.alt << endl;
+    }
+
+    return 0;
+}
+
+
 int main(int argc, char const **argv)
 {
     PhasingOptions opts;
@@ -56,6 +100,9 @@ int main(int argc, char const **argv)
 
     cout << "bam_file=" << opts.bam_file << endl;
     cout << "vcf_file=" << opts.vcf_file << endl;
+
+    vector<CPRA> variants;
+    parse_vcf_file(variants, opts.vcf_file);
 
     return 0;
 }
