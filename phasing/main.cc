@@ -1,3 +1,6 @@
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <vector>
 
@@ -5,7 +8,8 @@
 #include <seqan/sequence.h>
 #include <seqan/stream.h>
 #include <seqan/arg_parse.h>
-#include <seqan/vcf_io.h>
+
+#include "vcf.h"
 
 
 using namespace seqan;
@@ -18,10 +22,6 @@ struct CPRA
     int32_t pos;
     CharString ref;
     CharString alt;
-
-    CPRA(VcfRecord &r)
-    {
-    }
 };
 
 struct PhasingOptions
@@ -62,30 +62,46 @@ parseCommandLine(PhasingOptions &opts, int argc, char const **argv)
 
 int parse_vcf_file(vector<CPRA> variants, CharString &vcf_file)
 {
-    VcfFileIn vcfIn(toCString(vcf_file));
-    // Attach to standard output.
-    VcfFileOut vcfOut(vcfIn);
-    open(vcfOut, cout, Vcf());
+    htsFile *inf = bcf_open(toCString(vcf_file), "r");
+    if (inf == nullptr)
+        return EXIT_FAILURE;
 
-    // Copy over header
-    VcfHeader header;
-    readHeader(header, vcfIn);
-    auto contigs = contigNamesCache(context(vcfIn));
-    // for (auto &i : contigs) { cout << i << endl; }
-    cout << "length(contigs)=" << length(contigs) << endl;
-
-    VcfRecord record;
-    CharString rName = "chr12";
-    int rID = 0;
-    while (!atEnd(vcfIn))
+    bcf_hdr_t * hdr = bcf_hdr_read(inf);
+    int nsamples = bcf_hdr_nsamples(hdr);
+    if (nsamples != 1)
     {
-        getIdByName(rID, contigs, rName);
-        readRecord(record, vcfIn);
-        if ((length(record.ref) > 1) || (length(record.alt) > 1))
-            continue;
-        cout << rID << "\t" << record.beginPos << "\t"
-             << record.ref << "\t" << record.alt << endl;
+        fprintf(stderr, "File %s contains %d samples\n", toCString(vcf_file), nsamples);
+        return EXIT_FAILURE;
     }
+
+    const char **seqnames = nullptr;
+    int nseq;
+    seqnames = bcf_hdr_seqnames(hdr, &nseq);
+
+    bcf1_t *rec = bcf_init();
+    if (rec == NULL)
+        return EXIT_FAILURE;
+
+    /* Conditions: bi-allelic SNPs */
+    while (bcf_read(inf, hdr, rec) == 0)
+    {
+        bcf_unpack(rec, BCF_UN_STR);  // up to ALT inclusive
+        if (rec->n_allele > 2)
+            continue;
+        if (strlen(rec->d.allele[0]) > 1)
+            continue;
+        if (strlen(rec->d.allele[1]) > 1)
+            continue;
+        fprintf(stderr, "seqname:%s pos:%d n_allele:%d ref:%s alt:%s\n",
+                seqnames[rec->rid], rec->pos, rec->n_allele,
+                rec->d.allele[0], rec->d.allele[1]);
+    }
+
+    // Cleanup
+    if (seqnames != nullptr)
+        free(seqnames);
+    bcf_destroy(rec);
+    bcf_close(inf);
 
     return 0;
 }

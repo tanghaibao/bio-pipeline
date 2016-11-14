@@ -4,3 +4,6 @@
 [submodule "phasing/seqan"]
 	path = phasing/seqan
 	url = https://github.com/seqan/seqan
+[submodule "phasing/htslib"]
+	path = phasing/htslib
+	url = https://github.com/samtools/htslib
