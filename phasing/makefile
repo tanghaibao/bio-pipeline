@@ -1,4 +1,10 @@
-CXX=g++-6
+OS := $(shell uname)
+ifeq ($(OS), Darwin)
+	CXX=g++6
+else
+	CXX=g++-6
+endif
+
 CXXFLAGS+=-Ihtslib -Ihtslib/htslib -Iseqan/include -std=c++14 -DNDEBUG -W -Wall -pedantic -fopenmp
 LDFLAGS+=-lpthread -lrt -lz -lcurl -lcrypto
 
