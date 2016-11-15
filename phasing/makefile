@@ -1,12 +1,12 @@
 OS := $(shell uname)
 ifeq ($(OS), Darwin)
-	CXX=g++6
+	LDFLAGS+=-lpthread -lz -lcurl -lcrypto
 else
-	CXX=g++-6
+	LDFLAGS+=-lpthread -lrt -lz -lcurl -lcrypto
 endif
 
+CXX=g++-6
 CXXFLAGS+=-Ihtslib -Ihtslib/htslib -Iseqan/include -std=c++14 -DNDEBUG -W -Wall -pedantic -fopenmp
-LDFLAGS+=-lpthread -lrt -lz -lcurl -lcrypto
 
 default: all
 all: phasing
