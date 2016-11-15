@@ -4,62 +4,11 @@
 #include <iostream>
 #include <vector>
 
-#include <seqan/basic.h>
-#include <seqan/sequence.h>
-#include <seqan/stream.h>
-#include <seqan/arg_parse.h>
-
-#include "vcf.h"
+#include "main.h"
 
 
-using namespace seqan;
-using namespace std;
-
-
-struct CPRA
-{
-    CharString seq;
-    int32_t pos;
-    CharString ref;
-    CharString alt;
-};
-
-struct PhasingOptions
-{
-    CharString bam_file;
-    CharString vcf_file;
-};
-
-
-ArgumentParser::ParseResult
-parseCommandLine(PhasingOptions &opts, int argc, char const **argv)
-{
-    ArgumentParser parser("phasing");
-    addArgument(parser, ArgParseArgument(
-                        ArgParseArgument::STRING, "bam_file"));
-    addArgument(parser, ArgParseArgument(
-                        ArgParseArgument::STRING, "vcf_file"));
-
-    addUsageLine(parser,
-                 "[\\fBoptions\\fP] \\fBbam_file\\fP \\fBvcf_file\\fP");
-    addDescription(parser,
-                   "Parses BAM and VCF file to prepare phasing");
-
-    setShortDescription(parser, "SeqAn-based phasing");
-    setVersion(parser, "0.6.11");
-    setDate(parser, __DATE__);
-
-    ArgumentParser::ParseResult res = parse(parser, argc, argv);
-    if (res != ArgumentParser::PARSE_OK)
-        return res;
-
-    getArgumentValue(opts.bam_file, parser, 0);
-    getArgumentValue(opts.vcf_file, parser, 1);
-
-    return ArgumentParser::PARSE_OK;
-}
-
-
+/* Collect all bi-allelic SNPs in a vcf_file
+ * Conditions: 1) bi-allelic ; 2) SNPs */
 int parse_vcf_file(vector<CPRA> variants, CharString &vcf_file)
 {
     htsFile *inf = bcf_open(toCString(vcf_file), "r");
@@ -82,7 +31,6 @@ int parse_vcf_file(vector<CPRA> variants, CharString &vcf_file)
     if (rec == NULL)
         return EXIT_FAILURE;
 
-    /* Conditions: bi-allelic SNPs */
     while (bcf_read(inf, hdr, rec) == 0)
     {
         bcf_unpack(rec, BCF_UN_STR);  // up to ALT inclusive
@@ -92,9 +40,14 @@ int parse_vcf_file(vector<CPRA> variants, CharString &vcf_file)
             continue;
         if (strlen(rec->d.allele[1]) > 1)
             continue;
-        fprintf(stderr, "seqname:%s pos:%d n_allele:%d ref:%s alt:%s\n",
-                seqnames[rec->rid], rec->pos, rec->n_allele,
-                rec->d.allele[0], rec->d.allele[1]);
+        variants.push_back(CPRA(seqnames[rec->rid], rec->pos,
+                                rec->d.allele[0], rec->d.allele[1]));
+    }
+
+    for (auto &i : variants)
+    {
+        fprintf(stderr, "seqname:%s pos:%d ref:%s alt:%s\n",
+                toCString(i.seq), i.pos, toCString(i.ref), toCString(i.alt));
     }
 
     // Cleanup
@@ -103,7 +56,71 @@ int parse_vcf_file(vector<CPRA> variants, CharString &vcf_file)
     bcf_destroy(rec);
     bcf_close(inf);
 
-    return 0;
+    return EXIT_SUCCESS;
+}
+
+
+/* Function copied from `https://github.com/samtools/samtools/blob/develop/bam2depth.c`
+ * This function reads a BAM alignment from one BAM file. */
+static int read_bam(void *data, bam1_t *b) // read level filters better go here to avoid pileup
+{
+    aux_t *aux = (aux_t*)data; // data in fact is a pointer to an auxiliary structure
+    int ret;
+    while (1)
+    {
+        ret = aux->iter? sam_itr_next(aux->fp, aux->iter, b) : sam_read1(aux->fp, aux->hdr, b);
+        if ( ret<0 ) break;
+        if ( b->core.flag & (BAM_FUNMAP | BAM_FSECONDARY | BAM_FQCFAIL | BAM_FDUP) ) continue;
+        if ( (int)b->core.qual < aux->min_mapQ ) continue;
+        if ( aux->min_len && bam_cigar2qlen(b->core.n_cigar, bam_get_cigar(b)) < aux->min_len ) continue;
+        break;
+    }
+    return ret;
+}
+
+
+/* For each variant position, check the read counts supporting each variant in
+ * the bam_file */
+int parse_bam_file(vector<CPRA> variants, CharString &bam_file)
+{
+    int tid, pos, n_plp;
+    const bam_pileup1_t *ret;
+    aux_t *data = (aux_t *) calloc(1, sizeof(aux_t));
+    char *filename = toCString(bam_file);
+    // Initialize BAM
+    htsFormat *informat = (htsFormat *) calloc(1, sizeof(htsFormat));
+    hts_parse_format(informat, filename);
+    data->fp = sam_open_format(filename, "r", informat);
+    if (data->fp == nullptr)
+    {
+        return EXIT_FAILURE;
+    }
+    data->hdr = sam_hdr_read(data->fp);
+    if (data->hdr == nullptr)
+    {
+        fprintf(stderr, "Could not read header for `%s`\n", filename);
+        return EXIT_FAILURE;
+    }
+    hts_idx_t *idx = sam_index_load(data->fp, filename);
+    if (idx == nullptr)
+    {
+        fprintf(stderr, "Could not load index header for `%s`\n", filename);
+        return EXIT_FAILURE;
+    }
+
+    // Pileup
+    auto plp = bam_plp_init(read_bam, (void *) data);
+    for (auto &i : variants)
+    {
+        //data->iter = sam_itr_querys(idx, data->hdr, reg);
+        while ((ret=bam_plp_auto(plp, &tid, &pos, &n_plp)) != nullptr)
+        {
+        }
+    }
+
+    bam_plp_destroy(plp);
+
+    return EXIT_SUCCESS;
 }
 
 
@@ -119,6 +136,7 @@ int main(int argc, char const **argv)
 
     vector<CPRA> variants;
     parse_vcf_file(variants, opts.vcf_file);
+    parse_bam_file(variants, opts.bam_file);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
