@@ -111,8 +111,8 @@ int parse_bam_file(vector<CPRA> &variants, CharString &bam_file)
     char bad[] = "0.15";
     for (auto &i : variants)
     {
-        sprintf(variant, "%s_%d_%s_%s",
-                toCString(i.seq), i.pos + 1, toCString(i.ref), toCString(i.alt));
+        sprintf(variant, "%s_%d_%c_%c",
+                toCString(i.seq), i.pos + 1, i.ref[0], i.alt[0]);
         sprintf(reg, "%s:%d-%d", toCString(i.seq), i.pos + 1, i.pos + 1);  // 1-based coords
 
         bam_plp_t bplp = bam_plp_init(read_bam, (void *) data);
@@ -126,19 +126,17 @@ int parse_bam_file(vector<CPRA> &variants, CharString &bam_file)
         }
         while ((plp=bam_plp_auto(bplp, &tid, &pos, &n_plp)) != 0)
         {
-            if (pos < beg || pos >= end) continue;
+            if (pos < beg) continue;
+            if (pos >= end) break;
             for (int j = 0; j < n_plp; j++)
             {
                 const bam_pileup1_t *p = plp + j;
                 base = bases[bam_seqi(bam_get_seq(p->b), p->qpos)];
-                if (base == i.ref[0])
-                    alt_base = i.alt[0];
+                if (base == i.ref[0]) alt_base = i.alt[0];
                 else
                 {
-                    if (base == i.alt[0])
-                        alt_base = i.ref[0];
-                    else
-                        continue;
+                    if (base == i.alt[0]) alt_base = i.ref[0];
+                    else continue;
                 }
                 fprintf(stdout, "%s %s %c %s %c %s\n",
                         variant, bam_get_qname(p->b), base, good, alt_base, bad);
