@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 #include <vector>
 
 #include "main.h"
@@ -9,10 +8,10 @@
 
 /* Collect all bi-allelic SNPs in a vcf_file
  * Conditions: 1) bi-allelic ; 2) SNPs */
-int parse_vcf_file(vector<CPRA> variants, CharString &vcf_file)
+int parse_vcf_file(vector<CPRA> &variants, CharString &vcf_file)
 {
     htsFile *inf = bcf_open(toCString(vcf_file), "r");
-    if (inf == nullptr)
+    if (inf == NULL)
         return EXIT_FAILURE;
 
     bcf_hdr_t * hdr = bcf_hdr_read(inf);
@@ -23,7 +22,7 @@ int parse_vcf_file(vector<CPRA> variants, CharString &vcf_file)
         return EXIT_FAILURE;
     }
 
-    const char **seqnames = nullptr;
+    const char **seqnames = NULL;
     int nseq;
     seqnames = bcf_hdr_seqnames(hdr, &nseq);
 
@@ -44,14 +43,8 @@ int parse_vcf_file(vector<CPRA> variants, CharString &vcf_file)
                                 rec->d.allele[0], rec->d.allele[1]));
     }
 
-    for (auto &i : variants)
-    {
-        fprintf(stderr, "seqname:%s pos:%d ref:%s alt:%s\n",
-                toCString(i.seq), i.pos, toCString(i.ref), toCString(i.alt));
-    }
-
     // Cleanup
-    if (seqnames != nullptr)
+    if (seqnames != NULL)
         free(seqnames);
     bcf_destroy(rec);
     bcf_close(inf);
@@ -81,44 +74,81 @@ static int read_bam(void *data, bam1_t *b) // read level filters better go here 
 
 /* For each variant position, check the read counts supporting each variant in
  * the bam_file */
-int parse_bam_file(vector<CPRA> variants, CharString &bam_file)
+int parse_bam_file(vector<CPRA> &variants, CharString &bam_file)
 {
-    int tid, pos, n_plp;
-    const bam_pileup1_t *ret;
+    int tid, pos, n_plp, beg, end;
+    const bam_pileup1_t *plp;
     aux_t *data = (aux_t *) calloc(1, sizeof(aux_t));
     char *filename = toCString(bam_file);
     // Initialize BAM
     htsFormat *informat = (htsFormat *) calloc(1, sizeof(htsFormat));
     hts_parse_format(informat, filename);
     data->fp = sam_open_format(filename, "r", informat);
-    if (data->fp == nullptr)
+    if (data->fp == NULL)
     {
         return EXIT_FAILURE;
     }
     data->hdr = sam_hdr_read(data->fp);
-    if (data->hdr == nullptr)
+    if (data->hdr == NULL)
     {
         fprintf(stderr, "Could not read header for `%s`\n", filename);
         return EXIT_FAILURE;
     }
     hts_idx_t *idx = sam_index_load(data->fp, filename);
-    if (idx == nullptr)
+    if (idx == NULL)
     {
         fprintf(stderr, "Could not load index header for `%s`\n", filename);
         return EXIT_FAILURE;
     }
 
     // Pileup
-    auto plp = bam_plp_init(read_bam, (void *) data);
+    auto h = data->hdr;
+    char variant[64];
+    char reg[64];
+    char bases[] = ".AC.G...T.......N";
+    char base, alt_base;
+    char good[] = "0.85";
+    char bad[] = "0.15";
     for (auto &i : variants)
     {
-        //data->iter = sam_itr_querys(idx, data->hdr, reg);
-        while ((ret=bam_plp_auto(plp, &tid, &pos, &n_plp)) != nullptr)
+        sprintf(variant, "%s_%d_%s_%s",
+                toCString(i.seq), i.pos + 1, toCString(i.ref), toCString(i.alt));
+        sprintf(reg, "%s:%d-%d", toCString(i.seq), i.pos + 1, i.pos + 1);  // 1-based coords
+
+        bam_plp_t bplp = bam_plp_init(read_bam, (void *) data);
+        data->iter = sam_itr_querys(idx, h, reg);
+        beg = data->iter->beg;
+        end = data->iter->end;
+
+        if (data->iter == 0)
         {
+            fprintf(stderr, "Could not parse region \"%s\"", reg);
         }
+        while ((plp=bam_plp_auto(bplp, &tid, &pos, &n_plp)) != 0)
+        {
+            if (pos < beg || pos >= end) continue;
+            for (int j = 0; j < n_plp; j++)
+            {
+                const bam_pileup1_t *p = plp + j;
+                base = bases[bam_seqi(bam_get_seq(p->b), p->qpos)];
+                if (base == i.ref[0])
+                    alt_base = i.alt[0];
+                else
+                {
+                    if (base == i.alt[0])
+                        alt_base = i.ref[0];
+                    else
+                        continue;
+                }
+                fprintf(stdout, "%s %s %c %s %c %s\n",
+                        variant, bam_get_qname(p->b), base, good, alt_base, bad);
+            }
+        }
+        bam_plp_destroy(bplp);
     }
 
-    bam_plp_destroy(plp);
+    free(data);
+    free(informat);
 
     return EXIT_SUCCESS;
 }
@@ -130,9 +160,6 @@ int main(int argc, char const **argv)
     ArgumentParser::ParseResult res = parseCommandLine(opts, argc, argv);
     if (res != ArgumentParser::PARSE_OK)
         return res == ArgumentParser::PARSE_ERROR;
-
-    cout << "bam_file=" << opts.bam_file << endl;
-    cout << "vcf_file=" << opts.vcf_file << endl;
 
     vector<CPRA> variants;
     parse_vcf_file(variants, opts.vcf_file);
