@@ -7,7 +7,7 @@ license       = "MIT"
 
 # Dependencies
 
-requires "nim >= 0.17.2"
+requires "nim >= 0.19, zip >= 0.2.1"
 
 task test, "run the tests":
   exec "nim c -r -d:release -l:-lz htlib"
