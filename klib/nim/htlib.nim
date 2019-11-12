@@ -1,4 +1,4 @@
-import zlib
+import zip/zlib
 
 type
   kstring_t = object
