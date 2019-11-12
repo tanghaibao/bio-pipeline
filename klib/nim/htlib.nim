@@ -18,9 +18,10 @@ type
     f: ptr kstream_t
   gzFile = pointer
 
-proc kseq_init(fp: gzFile): ptr kseq_t {.header: "../kseq.h", importc: "kseq_init".}
-proc kseq_rewind(seq: ptr kseq_t) {.header: "../kseq.h", importc: "kseq_rewind".}
-proc kseq_read(seq: ptr kseq_t): int {.header: "../kseq.h", importc: "kseq_read".}
+proc kseq_init(fp: gzFile): ptr kseq_t {.header: "kseq.h",
+    importc: "kseq_init".}
+proc kseq_rewind(seq: ptr kseq_t) {.header: "kseq.h", importc: "kseq_rewind".}
+proc kseq_read(seq: ptr kseq_t): int {.header: "kseq.h", importc: "kseq_read".}
 
 
 proc main() =
@@ -29,7 +30,7 @@ proc main() =
   var ll: int;
   while true:
     if kseq_read(seq) < 0:
-        break
+      break
     echo seq.name.s
     echo seq.seq.s
   echo "Hello world!"

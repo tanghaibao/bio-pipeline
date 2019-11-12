@@ -95,8 +95,8 @@ proc inflateSync*(strm: var TZStream): int32{.cdecl, dynlib: libz,
     importc: "inflateSync".}
 proc inflateReset*(strm: var TZStream): int32{.cdecl, dynlib: libz,
     importc: "inflateReset".}
-proc compress*(dest: Pbytef, destLen: Pulongf, source: Pbytef, sourceLen: Ulong): cint{.
-    cdecl, dynlib: libz, importc: "compress".}
+proc compress*(dest: Pbytef, destLen: Pulongf, source: Pbytef,
+    sourceLen: Ulong): cint{.cdecl, dynlib: libz, importc: "compress".}
 proc compress2*(dest: Pbytef, destLen: Pulongf, source: Pbytef,
                 sourceLen: Ulong, level: cint): cint{.cdecl, dynlib: libz,
     importc: "compress2".}
@@ -123,12 +123,14 @@ proc gzgets*(thefile: GzFile, buf: Pbytef, length: int32): Pbytef{.cdecl,
 proc gzputc*(thefile: GzFile, c: int32): int32{.cdecl, dynlib: libz,
     importc: "gzputc".}
 proc gzgetc*(thefile: GzFile): int32{.cdecl, dynlib: libz, importc: "gzgetc".}
-proc gzungetc*(c: int32, thefile: GzFile): int32{.cdecl, dynlib: libz, importc: "gzungetc".}
+proc gzungetc*(c: int32, thefile: GzFile): int32{.cdecl, dynlib: libz,
+    importc: "gzungetc".}
 proc gzflush*(thefile: GzFile, flush: int32): int32{.cdecl, dynlib: libz,
     importc: "gzflush".}
 proc gzseek*(thefile: GzFile, offset: ZOffT, whence: int32): ZOffT{.cdecl,
     dynlib: libz, importc: "gzseek".}
-proc gzrewind*(thefile: GzFile): int32{.cdecl, dynlib: libz, importc: "gzrewind".}
+proc gzrewind*(thefile: GzFile): int32{.cdecl, dynlib: libz,
+    importc: "gzrewind".}
 proc gztell*(thefile: GzFile): ZOffT{.cdecl, dynlib: libz, importc: "gztell".}
 proc gzeof*(thefile: GzFile): int {.cdecl, dynlib: libz, importc: "gzeof".}
 proc gzclose*(thefile: GzFile): int32{.cdecl, dynlib: libz, importc: "gzclose".}
@@ -304,9 +306,9 @@ proc inflate*(buffer: var string): bool {.discardable.} =
   ## in this case the proc won't modify the buffer.
   ##
   ## Returns true if `buffer` was successfully inflated.
-  assert(not buffer.isNil)
+#   assert(not buffer.isNil)
   if buffer.len < 1: return
   var temp = uncompress(addr(buffer[0]), buffer.len)
-  if not temp.isNil:
-    swap(buffer, temp)
-    result = true
+#   if not temp.isNil:
+  swap(buffer, temp)
+  result = true
